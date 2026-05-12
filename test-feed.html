@@ -1,0 +1,55 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PopApp - Test Feed</title>
+    <style>
+        body { background: #0a0a0a; font-family: system-ui; color: white; margin: 0; padding: 20px; }
+        .video-grid { display: flex; flex-direction: column; gap: 20px; max-width: 400px; margin: 0 auto; }
+        .video-card { background: #1a1a1a; border-radius: 12px; overflow: hidden; }
+        video { width: 100%; height: auto; }
+        .info { padding: 12px; }
+        .username { font-weight: bold; color: #FF4F2E; }
+        .title { margin-top: 4px; }
+        .loading { text-align: center; padding: 40px; }
+    </style>
+</head>
+<body>
+    <h2 style="text-align:center; margin:20px;">PopApp Feed Test</h2>
+    <div id="feed" class="video-grid">
+        <div class="loading">Loading videos...</div>
+    </div>
+
+    <script>
+        async function loadFeed() {
+            try {
+                const response = await fetch('http://localhost:5000/api/videos/feed');
+                const videos = await response.json();
+                
+                const feedDiv = document.getElementById('feed');
+                
+                if (videos.length === 0) {
+                    feedDiv.innerHTML = '<div class="loading">No videos yet. Upload some!</div>';
+                    return;
+                }
+                
+                feedDiv.innerHTML = videos.map(video => 
+                    <div class="video-card">
+                        <video src="" controls poster=""></video>
+                        <div class="info">
+                            <div class="username"></div>
+                            <div class="title"></div>
+                        </div>
+                    </div>
+                ).join('');
+            } catch (error) {
+                console.error('Error loading feed:', error);
+                document.getElementById('feed').innerHTML = '<div class="loading">Error loading videos. Make sure backend is running on port 5000.</div>';
+            }
+        }
+        
+        loadFeed();
+    </script>
+</body>
+</html>

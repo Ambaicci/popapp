@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <title>PopApp — Short Films · Series · Moments</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        :root {
+            --pop: #FF4F2E;
+            --pop-light: #FF6E52;
+            --pop-dark: #CC3518;
+            --pop-glow: rgba(255, 79, 46, 0.35);
+            --bg: #080808;
+            --surface: #121212;
+            --surface2: #1c1c1c;
+            --surface3: #242424;
+            --text: #ffffff;
+            --muted: rgba(255, 255, 255, 0.5);
+            --thin: rgba(255, 255, 255, 0.07);
+            --thin2: rgba(255, 255, 255, 0.12);
+        }
+        
+        body {
+            background: #0a0a0a;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, sans-serif;
+        }
+        
+        .phone-frame {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #0a0a0a;
+            padding: 16px;
+        }
+        
+        .phone {
+            width: 375px;
+            height: 700px;
+            background: var(--bg);
+            border-radius: 44px;
+            overflow: hidden;
+            position: relative;
+            border: 2px solid #252525;
+            box-shadow: 0 0 0 6px #0e0e0e, 0 30px 60px rgba(0, 0, 0, 0.5);
+        }
+        
+        .dynamic-island {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 110px;
+            height: 35px;
+            background: #0e0e0e;
+            border-radius: 22px;
+            z-index: 200;
+        }
+        
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 70px;
+            transition: opacity 0.35s ease;
+            overflow-y: auto;
+        }
+        
+        .screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .status-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 22px 8px;
+            font-size: 12px;
+            font-weight: 800;
+            color: white;
+        }
+        
+        /* Splash Screen */
+        #splash-screen {
+            z-index: 50;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            bottom: 0;
+        }
+        
+        .meerkat-container {
+            position: relative;
+            width: 190px;
+            height: 190px;
+        }
+        
+        .ground-shadow {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140px;
+            height: 26px;
+            background: #1a0d05;
+            border-radius: 50%;
+        }
+        
+        .meerkat-svg {
+            position: absolute;
+            bottom: 6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90px;
+            animation: meerkatPop 3.4s ease forwards;
+        }
+        
+        @keyframes meerkatPop {
+            0% { transform: translateX(-50%) translateY(110px); opacity: 0; }
+            18% { transform: translateX(-50%) translateY(0); opacity: 1; }
+            32% { transform: translateX(-50%) translateY(-10px) rotate(6deg); }
+            46% { transform: translateX(-50%) translateY(0); }
+            60% { transform: translateX(-50%) translateY(0) rotate(-4deg); }
+            72% { transform: translateX(-50%) translateY(0) rotate(2deg); }
+            100% { transform: translateX(-50%) translateY(0); }
+        }
+        
+        .logo-row {
+            margin-top: 18px;
+            opacity: 0;
+            animation: fadeUp 0.7s ease 2.8s forwards;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .logo-circle {
+            width: 50px;
+            height: 50px;
+            background: var(--pop);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .logo-text-large {
+            font-family: 'Bebas Neue', system-ui;
+            font-size: 42px;
+            letter-spacing: 3px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .splash-subtitle {
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 8px;
+            letter-spacing: 1px;
+            opacity: 0;
+            animation: fadeUp 0.5s ease 3.2s forwards;
+        }
+        
+        /* Home Screen */
+        #home-screen {
+            background: var(--bg);
+        }
+        
+        /* Feed Container */
+        .feed-container {
+            height: 100%;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+        }
+        
+        .feed-container::-webkit-scrollbar {
+            display: none;
+        }
+        
+        /* Feed Item */
+        .feed-item {
+            height: 620px;
+            position: relative;
+            scroll-snap-align: start;
+            background: #000;
+            border-bottom: 1px solid #222;
+        }
+        
+        video {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* BOTTOM NAVIGATION */
+        .bottom-nav {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: rgba(8, 8, 8, 0.95);
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            z-index: 200;
+            border-top: 0.5px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.5);
+            height: 60px;
+            flex: 1;
+        }
+        
+        .nav-item.active {
+            color: var(--pop);
+        }
+        
+        .nav-item svg {
+            width: 24px;
+            height: 24px;
+        }
+        
+        .nav-item span {
+            font-size: 10px;
+            font-weight: 800;
+        }
+        
+        .center-button {
+            width: 44px;
+            height: 44px;
+            background: var(--pop);
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px rgba(255, 79, 46, 0.4);
+        }
+        
+        .center-button svg {
+            width: 22px;
+            height: 22px;
+            color: white;
+        }
+        
+        /* MENU BUTTON */
+        .menu-wrapper {
+            position: absolute;
+            top: 50px;
+            right: 16px;
+            z-index: 200;
+        }
+        
+        .menu-btn {
+            width: 44px;
+            height: 44px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 1.5px solid var(--pop);
+            transition: all 0.2s ease;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .menu-btn:active {
+            transform: scale(0.95);
+            background: var(--pop);
+        }
+        
+                .menu-panel {
+            position: absolute;
+            top: 55px;
+            right: 70px;
+            background: #1a1a1a;
+            border-radius: 20px;
+            padding: 12px;
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            border: 1px solid var(--pop);
+            z-index: 199;
+        }
+        
+        .menu-panel.show {
+            display: flex;
+        }
+        
+        .menu-top-row {
+            display: flex;
+            flex-direction: row-reverse;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        
+        .menu-chip {
+            background: #2a2a2a;
+            border: 1px solid rgba(255, 79, 46, 0.5);
+            border-radius: 30px;
+            padding: 8px 18px;
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        
+        .menu-chip:active {
+            background: var(--pop);
+        }
+        
+        .menu-bottom {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: flex-end;
+        }
+        
+        .menu-item-vertical {
+            background: #2a2a2a;
+            border: 1px solid rgba(255, 79, 46, 0.5);
+            border-radius: 30px;
+            padding: 8px 18px;
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+        
+        .menu-item-vertical:active {
+            background: var(--pop);
+        }
+        
+        /* Explore Screen */
+        #explore-screen, #popmovies-screen, #inbox-screen, #profile-screen,
+        #following-screen, #trending-screen, #tutorials-screen {
+            background: var(--bg);
+        }
+        
+        .screen-header {
+            padding: 50px 20px 20px;
+            font-size: 24px;
+            font-weight: 900;
+            color: white;
+            border-bottom: 1px solid #222;
+            margin-bottom: 20px;
+        }
+        
+        .placeholder-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            color: var(--muted);
+            text-align: center;
+            gap: 16px;
+        }
+        
+        .placeholder-icon {
+            font-size: 64px;
+        }
+        
+        .placeholder-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .placeholder-sub {
+            font-size: 13px;
+        }
+        
+        /* Pop-Movies */
+        .pm-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 50px 20px 14px;
+        }
+        
+        .pm-title {
+            font-size: 24px;
+            font-weight: 900;
+            color: white;
+        }
+        
+        .pm-accent {
+            color: var(--pop);
+        }
+        
+        .pm-close {
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        .pm-categories {
+            display: flex;
+            gap: 8px;
+            padding: 0 16px 16px;
+            overflow-x: auto;
+        }
+        
+        .pm-categories::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .pm-chip {
+            padding: 6px 16px;
+            border-radius: 22px;
+            font-size: 12px;
+            font-weight: 800;
+            background: var(--surface2);
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        
+        .pm-chip.active {
+            background: var(--pop);
+            color: white;
+        }
+        
+        .pm-grid {
+            padding: 12px 16px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            max-height: 520px;
+            overflow-y: auto;
+        }
+        
+        .pm-grid::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .pm-card {
+            border-radius: 14px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            aspect-ratio: 9 / 14;
+        }
+        
+        .pm-card.featured {
+            grid-column: span 2;
+            aspect-ratio: 16 / 7;
+        }
+        
+        .pm-card-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, transparent 40%, rgba(0, 0, 0, 0.9));
+        }
+        
+        .pm-card-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 12px;
+        }
+        
+        .pm-badge {
+            display: inline-block;
+            background: var(--pop);
+            font-size: 8px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-bottom: 6px;
+        }
+        
+        .pm-card-title {
+            font-size: 13px;
+            font-weight: 800;
+            color: white;
+            line-height: 1.3;
+        }
+        
+        .pm-card-meta {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 4px;
+        }
+        
+        /* Explore */
+        .explore-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 50px 20px 16px;
+        }
+        
+        .explore-title {
+            font-size: 28px;
+            font-weight: 900;
+            color: white;
+        }
+        
+        .search-icon {
+            font-size: 22px;
+            background: var(--surface2);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .explore-categories {
+            display: flex;
+            gap: 12px;
+            padding: 8px 20px 20px;
+            overflow-x: auto;
+        }
+        
+        .explore-cat-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            min-width: 70px;
+        }
+        
+        .cat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            background: rgba(255, 79, 46, 0.1);
+            border: 1px solid rgba(255, 79, 46, 0.3);
+        }
+        
+        .cat-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .explore-section {
+            padding: 8px 0 16px;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            font-weight: 800;
+            color: white;
+        }
+        
+        .see-all {
+            font-size: 12px;
+            color: var(--pop);
+            cursor: pointer;
+        }
+        
+        .creator-horizontal {
+            display: flex;
+            gap: 16px;
+            padding: 0 20px;
+            overflow-x: auto;
+        }
+        
+        .creator-horizontal::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .creator-card {
+            min-width: 100px;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .creator-bg {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 8px;
+        }
+        
+        .creator-avatar-large {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70px;
+            height: 70px;
+            background: var(--pop);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 900;
+            color: white;
+            margin-top: 40px;
+            margin-left: -40px;
+        }
+        
+        .creator-name-large {
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            margin-top: 8px;
+        }
+        
+        .rec-grid {
+            padding: 0 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .rec-card {
+            display: flex;
+            gap: 12px;
+            cursor: pointer;
+            background: var(--surface);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .rec-thumb {
+            width: 100px;
+            height: 70px;
+            flex-shrink: 0;
+        }
+        
+        .rec-info {
+            flex: 1;
+            padding: 8px 12px 8px 0;
+        }
+        
+        .rec-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 4px;
+        }
+        
+        .rec-meta {
+            font-size: 11px;
+            color: var(--muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="phone">
+            <div class="dynamic-island"></div>
+            
+            <!-- SPLASH SCREEN -->
+            <div class="screen" id="splash-screen">
+                <div class="status-bar">
+                    <span>9:41</span>
+                    <div style="display: flex; gap: 5px;">
+                        <svg width="15" height="10" viewBox="0 0 16 11" fill="white"><rect x="0" y="3" width="3" height="8" rx="1" opacity="0.4"/><rect x="4" y="2" width="3" height="9" rx="1" opacity="0.6"/><rect x="8" y="0" width="3" height="11" rx="1" opacity="0.8"/><rect x="12" y="0" width="3" height="11" rx="1"/></svg>
+                        <div style="width:22px;height:11px;border:1.5px solid rgba(255,255,255,0.55);border-radius:3px;position:relative;"><div style="position:absolute;top:2px;left:2px;right:3px;bottom:2px;background:white;border-radius:1px;"></div><div style="position:absolute;right:-4px;top:3px;width:2px;height:5px;background:rgba(255,255,255,0.55);border-radius:0 1px 1px 0;"></div></div>
+                    </div>
+                </div>
+                <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                    <div class="meerkat-container">
+                        <div class="ground-shadow"></div>
+                        <svg class="meerkat-svg" viewBox="0 0 100 130"><ellipse cx="50" cy="102" rx="21" ry="26" fill="#FF4F2E"/><circle cx="50" cy="58" r="28" fill="#F5F0EB"/><ellipse cx="50" cy="64" rx="16" ry="14" fill="#EDE4D8"/><circle cx="41" cy="54" r="7" fill="#1a0a00"/><circle cx="59" cy="54" r="7" fill="#1a0a00"/><circle cx="41" cy="54" r="5" fill="#FF4F2E" opacity="0.7"/><circle cx="59" cy="54" r="5" fill="#FF4F2E" opacity="0.7"/><circle cx="42" cy="53" r="2" fill="white"/><circle cx="60" cy="53" r="2" fill="white"/><ellipse cx="50" cy="63" rx="3.5" ry="2.5" fill="#c08070"/><path d="M46,67 Q50,72 54,67" stroke="#c08070" stroke-width="1.5" fill="none" stroke-linecap="round"/><ellipse cx="26" cy="41" rx="7" ry="9" fill="#FF4F2E"/><ellipse cx="26" cy="41" rx="4" ry="6" fill="#f5b8a0"/><ellipse cx="74" cy="41" rx="7" ry="9" fill="#FF4F2E"/><ellipse cx="74" cy="41" rx="4" ry="6" fill="#f5b8a0"/><path d="M44,33 Q50,22 56,33" fill="#FF4F2E"/><ellipse cx="50" cy="31" rx="7" ry="4" fill="#FF4F2E"/><ellipse cx="30" cy="98" rx="7" ry="13" fill="#FF4F2E" transform="rotate(-14 30 98)"/><ellipse cx="70" cy="98" rx="7" ry="13" fill="#FF4F2E" transform="rotate(14 70 98)"/></svg>
+                    </div>
+                    <div class="logo-row"><div class="logo-circle"><svg viewBox="0 0 54 54" width="36" height="36"><circle cx="27" cy="22" r="13" fill="#F5F0EB"/><circle cx="21" cy="18" r="4" fill="#1a0a00"/><circle cx="33" cy="18" r="4" fill="#1a0a00"/><circle cx="21" cy="18" r="2.5" fill="#FF4F2E" opacity="0.7"/><circle cx="33" cy="18" r="2.5" fill="#FF4F2E" opacity="0.7"/><circle cx="22" cy="17" r="1" fill="white"/><circle cx="34" cy="17" r="1" fill="white"/><ellipse cx="27" cy="24" rx="2" ry="1.5" fill="#c08070"/><path d="M23,27 Q27,31 31,27" stroke="#c08070" stroke-width="1" fill="none" stroke-linecap="round"/></svg></div><span class="logo-text-large">popapp</span></div>
+                    <p class="splash-subtitle">short films · series · moments</p>
+                </div>
+            </div>
+            
+            <!-- HOME SCREEN -->
+            <div class="screen hidden" id="home-screen">
+                <div class="status-bar">
+                    <span>9:41</span>
+                    <div style="display: flex; gap: 5px;">
+                        <svg width="15" height="10" viewBox="0 0 16 11" fill="white"><rect x="0" y="3" width="3" height="8" rx="1" opacity="0.4"/><rect x="4" y="2" width="3" height="9" rx="1" opacity="0.6"/><rect x="8" y="0" width="3" height="11" rx="1" opacity="0.8"/><rect x="12" y="0" width="3" height="11" rx="1"/></svg>
+                        <div style="width:22px;height:11px;border:1.5px solid rgba(255,255,255,0.55);border-radius:3px;position:relative;"><div style="position:absolute;top:2px;left:2px;right:3px;bottom:2px;background:white;border-radius:1px;"></div><div style="position:absolute;right:-4px;top:3px;width:2px;height:5px;background:rgba(255,255,255,0.55);border-radius:0 1px 1px 0;"></div></div>
+                    </div>
+                </div>
+                <div class="feed-container" id="video-feed"></div>
+            </div>
+            
+            <!-- EXPLORE SCREEN -->
+            <div class="screen hidden" id="explore-screen">
+                <div class="status-bar"><span>9:41</span><div style="display:flex;gap:5px;"><svg width="15" height="10" viewBox="0 0 16 11" fill="white"><rect x="0" y="3" width="3" height="8" rx="1" opacity="0.4"/><rect x="4" y="2" width="3" height="9" rx="1" opacity="0.6"/><rect x="8" y="0" width="3" height="11" rx="1" opacity="0.8"/><rect x="12" y="0" width="3" height="11" rx="1"/></svg><div style="width:22px;height:11px;border:1.5px solid rgba(255,255,255,0.55);border-radius:3px;position:relative;"><div style="position:absolute;top:2px;left:2px;right:3px;bottom:2px;background:white;border-radius:1px;"></div><div style="position:absolute;right:-4px;top:3px;width:2px;height:5px;background:rgba(255,255,255,0.55);border-radius:0 1px 1px 0;"></div></div></div></div>
+                <div class="explore-header"><span class="explore-title">Discover</span><div class="search-icon">🔍</div></div>
+                <div class="explore-categories"><div class="explore-cat-card"><div class="cat-icon">🎬</div><span class="cat-name">Movies</span></div><div class="explore-cat-card"><div class="cat-icon">📚</div><span class="cat-name">Tutorials</span></div><div class="explore-cat-card"><div class="cat-icon">🔥</div><span class="cat-name">Trending</span></div></div>
+                <div class="explore-section"><div class="section-header"><span>🔥 Trending Creators</span><span class="see-all">See all →</span></div><div class="creator-horizontal"><div class="creator-card"><div class="creator-bg" style="background:linear-gradient(135deg,#1a0533,#8B1A4A)"></div><div class="creator-avatar-large">Z</div><div class="creator-name-large">@zara.films</div></div><div class="creator-card"><div class="creator-bg" style="background:linear-gradient(135deg,#0a1f0e,#2d8a44)"></div><div class="creator-avatar-large">K</div><div class="creator-name-large">@kipchoge</div></div></div></div>
+                <div class="explore-section"><div class="section-header"><span>📺 Recommended</span><span class="see-all">See all →</span></div><div class="rec-grid"><div class="rec-card"><div class="rec-thumb" style="background:linear-gradient(135deg,#1a0533,#8B1A4A)"></div><div class="rec-info"><div class="rec-title">The Last Train to Nairobi</div><div class="rec-meta">@zara.films · 2.4M views</div></div></div></div></div>
+            </div>
+            
+            <!-- POP-MOVIES SCREEN -->
+            <div class="screen hidden" id="popmovies-screen">
+                <div class="status-bar"><span>9:41</span><div style="display:flex;gap:5px;"><svg width="15" height="10" viewBox="0 0 16 11" fill="white"><rect x="0" y="3" width="3" height="8" rx="1" opacity="0.4"/><rect x="4" y="2" width="3" height="9" rx="1" opacity="0.6"/><rect x="8" y="0" width="3" height="11" rx="1" opacity="0.8"/><rect x="12" y="0" width="3" height="11" rx="1"/></svg><div style="width:22px;height:11px;border:1.5px solid rgba(255,255,255,0.55);border-radius:3px;position:relative;"><div style="position:absolute;top:2px;left:2px;right:3px;bottom:2px;background:white;border-radius:1px;"></div><div style="position:absolute;right:-4px;top:3px;width:2px;height:5px;background:rgba(255,255,255,0.55);border-radius:0 1px 1px 0;"></div></div></div></div>
+                <div class="pm-header"><span class="pm-title"><span class="pm-accent">pop</span>-movies</span><div class="pm-close" id="pmClose">✕</div></div>
+                <div class="pm-categories"><div class="pm-chip active">All</div><div class="pm-chip">Thriller</div><div class="pm-chip">Drama</div><div class="pm-chip">Comedy</div></div>
+                <div class="pm-grid"><div class="pm-card featured" style="background:linear-gradient(135deg,#1a0533,#8B1A4A)"><div class="pm-card-overlay"></div><div class="pm-card-info"><div class="pm-badge">series · ep 3</div><div class="pm-card-title">The Last Train to Nairobi</div><div class="pm-card-meta">▶ 6:15 · 2.4M views</div></div></div><div class="pm-card" style="background:linear-gradient(135deg,#0d0533,#3040A0)"><div class="pm-card-overlay"></div><div class="pm-card-info"><div class="pm-badge">short</div><div class="pm-card-title">Echoes</div><div class="pm-card-meta">▶ 5:48</div></div></div></div>
+            </div>
+            
+            <!-- INBOX SCREEN -->
+            <div class="screen hidden" id="inbox-screen">
+                <div class="status-bar"><span>9:41</span><div style="display:flex;gap:5px;"><svg width="15" height="10" viewBox="0 0 16 11" fill="white"><rect x="0" y="3" width="3" height="8" rx="1" opacity="0.4"/><rect x="4" y="2" width="3" height="9" rx="1" opacity="0.6"/><rect x="8" y="0" width="3" height="11" rx="1" opacity="0.8"/><rect x="12" y="0" width="3" height="11" rx="1"/></svg><div style="width:22px;height:11px;border:1.5px solid rgba(255,255,255,0.55);border-radius:3px;position:relative;"><div style="position:absolute;top:2px;left:2px;right:3px;bottom:2px;background:white;border-radius:1px;"></div><div style="position:absolute;right:-4px;top:3px;width:2px;height:5px;background:rgba(255,255,255,0.55);border-radius:0 1px 1px 0;"></div></div></div></div>
+                <div class="screen-header">📬 Inbox</div>
+                <div class="placeholder-content"><div class="placeholder-icon">💬</div><div class="placeholder-text">Messages & notifications</div><div class="placeholder-sub">Coming soon</div></div>
+            </div>
+            
+            <!-- PROFILE SCREEN -->
+            <div class="screen hidden" id="profile-screen">
+                <div class="status-bar"><span>9:41</span><div style="display:flex;gap:5px;"><svg width="15" height="10" viewBox="0 0 16 11" fill="white"><rect x="0" y="3" width="3" height="8" rx="1" opacity="0.4"/><rect x="4" y="2" width="3" height="9" rx="1" opacity="0.6"/><rect x="8" y="0" width="3" height="11" rx="1" opacity="0.8"/><rect x="12" y="0" width="3" height="11" rx="1"/></svg><div style="width:22px;height:11px;border:1.5px solid rgba(255,255,255,0.55);border-radius:3px;position:relative;"><div style="position:absolute;top:2px;left:2px;right:3px;bottom:2px;background:white;border-radius:1px;"></div><div style="position:absolute;right:-4px;top:3px;width:2px;height:5px;background:rgba(255,255,255,0.55);border-radius:0 1px 1px 0;"></div></div></div></div>
+                <div class="screen-header">👤 Profile</div>
+                <div class="placeholder-content"><div class="placeholder-icon">🎬</div><div class="placeholder-text">Your videos & settings</div><div class="placeholder-sub">Coming soon</div></div>
+            </div>
+            
+            <!-- FOLLOWING SCREEN -->
+            <div class="screen hidden" id="following-screen">
+                <div class="status-bar"><span>9:41</span><div style="display:flex;gap:5px;"><svg width="15" height="10" viewBox="0 0 16 11" fill="white"><rect x="0" y="3" width="3" height="8" rx="1" opacity="0.4"/><rect x="4" y="2" width="3" height="9" rx="1" opacity="0.6"/><rect x="8" y="0" width="3" height="11" rx="1" opacity="0.8"/><rect x="12" y="0" width="3" height="11" rx="1"/></svg><div style="width:22px;height:11px;border:1.5px solid rgba(255,255,255,0.55);border-radius:3px;position:relative;"><div style="position:absolute;top:2px;left:2px;right:3px;bottom:2px;background:white;border-radius:1px;"></div><div style="position:absolute;right:-4px;top:3px;width:2px;height:5px;background:rgba(255,255,255,0.55);border-radius:0 1px 1px 0;"></div></div></div></div>
+                <div class="screen-header">⭐ Following</div>
+                <div class="placeholder-content"><div class="placeholder-icon">👥</div><div class="placeholder-text">Creators you follow</div><div class="placeholder-sub">Coming soon</div></div>
+            </div>
+            
+            <!-- TRENDING SCREEN -->
+            <div class="screen hidden" id="trending-screen">
+                <div class="status-bar"><span>9:41</span><div style="display:flex;gap:5px;"><svg width="15" height="10" viewBox="0 0 16 11" fill="white"><rect x="0" y="3" width="3" height="8" rx="1" opacity="0.4"/><rect x="4" y="2" width="3" height="9" rx="1" opacity="0.6"/><rect x="8" y="0" width="3" height="11" rx="1" opacity="0.8"/><rect x="12" y="0" width="3" height="11" rx="1"/></svg><div style="width:22px;height:11px;border:1.5px solid rgba(255,255,255,0.55);border-radius:3px;position:relative;"><div style="position:absolute;top:2px;left:2px;right:3px;bottom:2px;background:white;border-radius:1px;"></div><div style="position:absolute;right:-4px;top:3px;width:2px;height:5px;background:rgba(255,255,255,0.55);border-radius:0 1px 1px 0;"></div></div></div></div>
+                <div class="screen-header">🔥 Trending</div>
+                <div class="placeholder-content"><div class="placeholder-icon">📈</div><div class="placeholder-text">What's hot right now</div><div class="placeholder-sub">Coming soon</div></div>
+            </div>
+            
+            <!-- TUTORIALS SCREEN -->
+            <div class="screen hidden" id="tutorials-screen">
+                <div class="status-bar"><span>9:41</span><div style="display:flex;gap:5px;"><svg width="15" height="10" viewBox="0 0 16 11" fill="white"><rect x="0" y="3" width="3" height="8" rx="1" opacity="0.4"/><rect x="4" y="2" width="3" height="9" rx="1" opacity="0.6"/><rect x="8" y="0" width="3" height="11" rx="1" opacity="0.8"/><rect x="12" y="0" width="3" height="11" rx="1"/></svg><div style="width:22px;height:11px;border:1.5px solid rgba(255,255,255,0.55);border-radius:3px;position:relative;"><div style="position:absolute;top:2px;left:2px;right:3px;bottom:2px;background:white;border-radius:1px;"></div><div style="position:absolute;right:-4px;top:3px;width:2px;height:5px;background:rgba(255,255,255,0.55);border-radius:0 1px 1px 0;"></div></div></div></div>
+                <div class="screen-header">📚 Tutorials</div>
+                <div class="placeholder-content"><div class="placeholder-icon">🎓</div><div class="placeholder-text">Learn to create</div><div class="placeholder-sub">Coming soon</div></div>
+            </div>
+            
+            <!-- ========== MENU ========== -->
+            <div class="menu-wrapper">
+                <div class="menu-btn" id="menuButton">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="white" stroke-width="2.5"><circle cx="4" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="20" cy="12" r="1.5"/></svg>
+                </div>
+                <div class="menu-panel" id="menuPanel">
+                    <div class="menu-top-row">
+                        <div class="menu-chip" data-menu="popmovies">🎬 Pop Movies</div>
+                        <div class="menu-chip" data-menu="tutorials">📚 Tutorials</div>
+                        <div class="menu-chip" data-menu="trending">🔥 Trending</div>
+                    </div>
+                    <div class="menu-bottom">
+                        <div class="menu-item-vertical" id="studioMenuItem">🎙️ Pop Studio</div>
+                        <div class="menu-item-vertical" data-menu="following">⭐ Following</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ========== BOTTOM NAVIGATION ========== -->
+            <div class="bottom-nav">
+                <div class="nav-item active" data-tab="home">
+                    <svg viewBox="0 0 24 24" width="24" height="24"><path d="M3 12L12 3l9 9v9a1 1 0 01-1 1h-5v-5H9v5H4a1 1 0 01-1-1v-9z" fill="currentColor"/></svg>
+                    <span>Home</span>
+                </div>
+                <div class="nav-item" data-tab="explore">
+                    <svg viewBox="0 0 24 24" width="24" height="24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><polygon points="12,6 13.5,10.5 18,12 13.5,13.5 12,18 10.5,13.5 6,12 10.5,10.5" fill="currentColor"/></svg>
+                    <span>Explore</span>
+                </div>
+                <div class="nav-item" data-tab="upload" onclick="if(window.UploadModule) window.UploadModule.show();">
+                    <div class="center-button">
+                        <svg viewBox="0 0 24 24" width="22" height="22"><path d="M12 16V4m0 0l-3 3m3-3l3 3M4 20h16" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                    <span>Upload</span>
+                </div>
+                <div class="nav-item" data-tab="inbox">
+                    <svg viewBox="0 0 24 24" width="24" height="24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" fill="none" stroke="currentColor" stroke-width="2"/><polyline points="22,6 12,13 2,6" stroke="currentColor" stroke-width="2"/></svg>
+                    <span>Inbox</span>
+                </div>
+                <div class="nav-item" data-tab="profile">
+                    <svg viewBox="0 0 24 24" width="24" height="24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                    <span>Profile</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+        <script>
+        // ========== SIMPLE MENU SYSTEM ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            var btn = document.getElementById('menuButton');
+            var panel = document.getElementById('menuPanel');
+            var isOpen = false;
+            
+            if (btn && panel) {
+                btn.onclick = function(e) {
+                    e.stopPropagation();
+                    if (isOpen) {
+                        panel.classList.remove('show');
+                        isOpen = false;
+                    } else {
+                        panel.classList.add('show');
+                        isOpen = true;
+                    }
+                };
+                
+                document.addEventListener('click', function(e) {
+                    if (isOpen && !btn.contains(e.target) && !panel.contains(e.target)) {
+                        panel.classList.remove('show');
+                        isOpen = false;
+                    }
+                });
+            }
+            
+            var studioItem = document.getElementById('studioMenuItem');
+            if (studioItem) {
+                studioItem.onclick = function(e) {
+                    e.stopPropagation();
+                    window.location.href = 'studio.html';
+                };
+            }
+            
+            document.querySelectorAll('.menu-chip, .menu-item-vertical:not(#studioMenuItem)').forEach(function(item) {
+                item.onclick = function(e) {
+                    e.stopPropagation();
+                    alert(item.innerText + ' — coming soon!');
+                    if (panel) panel.classList.remove('show');
+                    isOpen = false;
+                };
+            });
+        });
+    </script>
+    <script src="js/splash.js"></script>
+    <script src="js/feed.js"></script>
+    <script src="js/upload.js"></script>
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Test</title>
+    <style>
+        body {
+            background: #0a0a0a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: system-ui;
+        }
+        .phone {
+            width: 375px;
+            height: 700px;
+            background: #080808;
+            border-radius: 44px;
+            position: relative;
+            border: 2px solid #252525;
+        }
+        .menu-btn {
+            position: absolute;
+            top: 50px;
+            right: 16px;
+            width: 44px;
+            height: 44px;
+            background: rgba(0,0,0,0.7);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 2px solid #FF4F2E;
+            z-index: 100;
+        }
+        .menu-panel {
+            position: absolute;
+            top: 100px;
+            right: 16px;
+            background: #1a1a1a;
+            border-radius: 16px;
+            padding: 12px;
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            border: 1px solid #FF4F2E;
+            z-index: 99;
+        }
+        .menu-item {
+            padding: 8px 18px;
+            color: white;
+            cursor: pointer;
+            white-space: nowrap;
+            border-radius: 30px;
+            background: #2a2a2a;
+        }
+        .menu-item:hover {
+            background: #FF4F2E;
+        }
+        .content {
+            color: white;
+            text-align: center;
+            padding-top: 100px;
+        }
+    </style>
+</head>
+<body>
+<div class="phone">
+    <div class="menu-btn" id="menuBtn">☰</div>
+    <div class="menu-panel" id="menuPanel">
+        <div class="menu-item" id="studioTest">🎙️ Pop Studio</div>
+        <div class="menu-item">🎬 Pop Movies</div>
+        <div class="menu-item">📚 Tutorials</div>
+        <div class="menu-item">⭐ Following</div>
+    </div>
+    <div class="content">
+        <h2>PopApp</h2>
+        <p>Click the ☰ button</p>
+    </div>
+</div>
+
+<script>
+    var btn = document.getElementById('menuBtn');
+    var panel = document.getElementById('menuPanel');
+    var isOpen = false;
+    
+    btn.onclick = function(e) {
+        e.stopPropagation();
+        if (isOpen) {
+            panel.style.display = 'none';
+            isOpen = false;
+        } else {
+            panel.style.display = 'flex';
+            isOpen = true;
+        }
+    };
+    
+    document.addEventListener('click', function(e) {
+        if (isOpen && !btn.contains(e.target) && !panel.contains(e.target)) {
+            panel.style.display = 'none';
+            isOpen = false;
+        }
+    });
+    
+    document.getElementById('studioTest').onclick = function(e) {
+        e.stopPropagation();
+        alert('Navigating to studio.html');
+        // window.location.href = 'studio.html';
+    };
+</script>
+</body>
+</html>

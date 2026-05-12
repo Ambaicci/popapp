@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PopApp Backend Test</title>
+    <style>
+        body { background: #0a0a0a; font-family: system-ui; color: white; padding: 20px; }
+        button { background: #FF4F2E; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin: 5px; }
+        pre { background: #1a1a1a; padding: 10px; border-radius: 8px; overflow: auto; }
+        input, textarea { padding: 8px; margin: 5px; border-radius: 6px; border: none; background: #2a2a2a; color: white; }
+        .section { background: #121212; padding: 15px; margin: 10px 0; border-radius: 12px; }
+    </style>
+</head>
+<body>
+    <h1>PopApp Backend Connection Test</h1>
+    
+    <div class="section">
+        <h3>1. Test API Connection</h3>
+        <button onclick="testConnection()">Test Connection</button>
+        <pre id="connectionResult">Click test</pre>
+    </div>
+
+    <div class="section">
+        <h3>2. Upload Video</h3>
+        <input type="text" id="title" placeholder="Video Title"><br>
+        <textarea id="desc" placeholder="Description" rows="2"></textarea><br>
+        <input type="file" id="videoFile" accept="video/*"><br>
+        <button onclick="uploadVideo()">Upload to Backend</button>
+        <pre id="uploadResult"></pre>
+    </div>
+
+    <div class="section">
+        <h3>3. View Videos in Feed</h3>
+        <button onclick="loadFeed()">Load Videos</button>
+        <pre id="feedResult">Click load</pre>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api/videos';
+
+        async function testConnection() {
+            try {
+                const res = await fetch('http://localhost:5000/');
+                const data = await res.json();
+                document.getElementById('connectionResult').innerHTML = JSON.stringify(data, null, 2);
+            } catch (err) {
+                document.getElementById('connectionResult').innerHTML = 'Error: ' + err.message + '\n\nMake sure backend is running: node server.js';
+            }
+        }
+
+        async function uploadVideo() {
+            const fileInput = document.getElementById('videoFile');
+            const title = document.getElementById('title').value;
+            const desc = document.getElementById('desc').value;
+            
+            if (!fileInput.files[0]) {
+                document.getElementById('uploadResult').innerHTML = 'Please select a video file';
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('video', fileInput.files[0]);
+            formData.append('title', title || 'Test Video');
+            formData.append('description', desc);
+            
+            document.getElementById('uploadResult').innerHTML = 'Uploading...';
+            
+            try {
+                const res = await fetch(API_URL + '/upload', { method: 'POST', body: formData });
+                const data = await res.json();
+                document.getElementById('uploadResult').innerHTML = JSON.stringify(data, null, 2);
+                if (data.success) {
+                    loadFeed();
+                }
+            } catch (err) {
+                document.getElementById('uploadResult').innerHTML = 'Error: ' + err.message;
+            }
+        }
+
+        async function loadFeed() {
+            try {
+                const res = await fetch(API_URL + '/feed');
+                const data = await res.json();
+                document.getElementById('feedResult').innerHTML = JSON.stringify(data, null, 2);
+            } catch (err) {
+                document.getElementById('feedResult').innerHTML = 'Error: ' + err.message;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <title>PopApp Studio — Create Anything</title>
+    <style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=Bebas+Neue&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none;}
+:root{
+  --pop:#FF4F2E;--pop2:#FF6E52;--pop3:rgba(255,79,46,0.12);
+  --bg:#0C0C0C;--s1:#161616;--s2:#1E1E1E;--s3:#272727;--s4:#313131;
+  --txt:#FFF;--txt2:rgba(255,255,255,0.65);--txt3:rgba(255,255,255,0.38);
+  --bdr:rgba(255,255,255,0.07);--bdr2:rgba(255,255,255,0.13);
+  --teal:#1D9E75;--blue:#378ADD;--purple:#7F77DD;--amber:#EF9F27;--pink:#D4537E;
+  --f:'Nunito',sans-serif;
+}
+body{background:#1a1a2e;font-family:var(--f);display:flex;justify-content:center;padding:20px 0 40px;}
+
+.phone-shell{
+  width:375px;
+  background:#111;
+  border-radius:48px;
+  border:2px solid #2a2a2a;
+  box-shadow:0 0 0 6px #0d0d0d, 0 40px 80px rgba(0,0,0,0.7);
+  overflow:hidden;
+  position:relative;
+}
+.notch{
+  position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:110px;height:28px;background:#111;border-radius:0 0 18px 18px;z-index:200;
+}
+.screen{
+  height:812px;background:var(--bg);
+  display:flex;flex-direction:column;
+  overflow:hidden;position:relative;
+}
+
+.status{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:14px 22px 6px;font-size:12px;font-weight:800;color:white;flex-shrink:0;
+}
+.s-icons{display:flex;gap:5px;align-items:center;}
+.batt{width:22px;height:11px;border:1.5px solid rgba(255,255,255,0.5);border-radius:3px;position:relative;}
+.batt::after{content:'';position:absolute;top:2px;left:2px;right:3px;bottom:2px;background:white;border-radius:1px;}
+.batt::before{content:'';position:absolute;right:-4px;top:3px;width:2px;height:5px;background:rgba(255,255,255,0.5);border-radius:0 1px 1px 0;}
+
+.page{display:none;flex-direction:column;flex:1;overflow:hidden;}
+.page.on{display:flex;}
+
+/* Back button */
+.back-link {
+  padding: 8px 16px;
+  margin-top: 4px;
+}
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0,0,0,0.5);
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  border: 0.5px solid rgba(255,255,255,0.1);
+}
+.back-btn svg {
+  width: 14px;
+  height: 14px;
+}
+.back-btn span {
+  font-size: 12px;
+  font-weight: 800;
+  color: white;
+}
+.app-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 16px 10px;flex-shrink:0;
+}
+.app-brand{display:flex;align-items:center;gap:7px;}
+.app-dot{width:28px;height:28px;background:var(--pop);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.app-dot svg{width:16px;height:16px;}
+.app-name{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;color:var(--txt);}
+.app-tag{font-size:9px;font-weight:900;color:var(--pop);letter-spacing:1.5px;margin-left:1px;}
+.app-bar-r{display:flex;gap:8px;align-items:center;}
+.mode-pill{
+  display:flex;align-items:center;gap:5px;padding:4px 9px;
+  border-radius:20px;font-size:10px;font-weight:900;cursor:pointer;
+}
+.mode-pill.easy{background:rgba(29,158,117,0.12);color:#5DCAA5;border:0.5px solid rgba(29,158,117,0.25);}
+.mode-pill.pro{background:rgba(127,119,221,0.12);color:#AFA9EC;border:0.5px solid rgba(127,119,221,0.25);}
+.mpd{width:5px;height:5px;border-radius:50%;}
+.avi{width:28px;height:28px;border-radius:50%;background:var(--pop);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:white;flex-shrink:0;}
+
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;}
+.scroll::-webkit-scrollbar{display:none;}
+
+.h-hero{padding:16px 16px 20px;text-align:center;}
+.h-q{font-size:22px;font-weight:900;color:var(--txt);margin-bottom:4px;}
+.h-sub{font-size:12px;color:var(--txt2);line-height:1.5;}
+
+.make-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:0 16px 20px;}
+.mk{
+  border-radius:14px;padding:14px 12px;cursor:pointer;
+  border:0.5px solid var(--bdr2);background:var(--s1);
+  display:flex;flex-direction:column;gap:8px;transition:border-color 0.15s;
+}
+.mk:active{border-color:rgba(255,79,46,0.5);background:var(--s2);}
+.mk-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;}
+.mk-icon svg{width:18px;height:18px;}
+.mk-title{font-size:13px;font-weight:900;color:var(--txt);}
+.mk-sub{font-size:10px;color:var(--txt3);line-height:1.4;}
+
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;padding:0 16px;margin-bottom:10px;}
+.sec-lbl{font-size:10px;font-weight:900;color:var(--txt3);letter-spacing:1.2px;text-transform:uppercase;}
+.sec-more{font-size:11px;font-weight:800;color:var(--pop);}
+
+.tpl-row{display:flex;gap:8px;padding:0 16px 20px;overflow-x:auto;}
+.tpl-row::-webkit-scrollbar{display:none;}
+.tpl{flex-shrink:0;width:110px;border-radius:10px;overflow:hidden;border:0.5px solid var(--bdr);cursor:pointer;}
+.tpl:active{opacity:0.8;}
+.tpl-th{height:70px;display:flex;align-items:flex-end;padding:6px;}
+.tpl-badge{font-size:8px;font-weight:900;padding:2px 6px;border-radius:3px;text-transform:uppercase;letter-spacing:0.4px;}
+.tpl-meta{padding:6px 8px 8px;background:var(--s2);}
+.tpl-name{font-size:11px;font-weight:800;color:var(--txt);}
+.tpl-ct{font-size:9px;color:var(--txt3);}
+
+.work-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:0 16px 20px;}
+.wk{border-radius:10px;overflow:hidden;border:0.5px solid var(--bdr);cursor:pointer;}
+.wk:active{opacity:0.8;}
+.wk-th{height:72px;position:relative;}
+.wk-type{position:absolute;bottom:5px;left:5px;font-size:8px;font-weight:900;padding:2px 5px;border-radius:3px;text-transform:uppercase;}
+.wk-meta{padding:7px 9px 9px;background:var(--s2);}
+.wk-name{font-size:11px;font-weight:800;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.wk-info{font-size:9px;color:var(--txt3);margin-top:1px;}
+
+.magic-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:0 16px 24px;}
+.mgc{
+  background:var(--s2);border:0.5px solid var(--bdr2);border-radius:12px;
+  padding:12px 10px;cursor:pointer;display:flex;flex-direction:column;gap:7px;
+}
+.mgc:active{border-color:var(--bdr);background:var(--s3);}
+.mgc svg{width:16px;height:16px;flex-shrink:0;}
+.mgc-n{font-size:12px;font-weight:900;color:var(--txt);}
+.mgc-s{font-size:10px;color:var(--txt3);line-height:1.35;}
+
+.bottom-tabs{
+  display:flex;align-items:flex-start;justify-content:space-around;
+  padding:10px 0 4px;border-top:0.5px solid var(--bdr);
+  background:rgba(12,12,12,0.96);flex-shrink:0;
+}
+.btab{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:0 8px;}
+.btab-icon svg{width:22px;height:22px;}
+.btab-lbl{font-size:9px;font-weight:800;}
+.btab.on .btab-icon svg{fill:white;stroke:white;}
+.btab:not(.on) .btab-icon svg{fill:rgba(255,255,255,0.3);stroke:rgba(255,255,255,0.3);}
+.btab.on .btab-lbl{color:white;}
+.btab:not(.on) .btab-lbl{color:rgba(255,255,255,0.3);}
+.btab-center{position:relative;}
+.btab-pill{
+  width:48px;height:30px;background:var(--pop);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 14px rgba(255,79,46,0.4);
+}
+.btab-pill svg{width:16px;height:16px;fill:white;}
+.btab-center .btab-lbl{color:var(--pop);font-size:9px;}
+
+/* Creator Editor */
+.preview-area{
+  flex:0 0 340px;position:relative;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
+}
+.dotbg{position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,0.04) 1px,transparent 1px);background-size:18px 18px;}
+.phone-preview{
+  width:160px;height:285px;border-radius:14px;
+  border:1.5px solid var(--bdr2);position:relative;overflow:hidden;flex-shrink:0;
+}
+.pp-bg{position:absolute;inset:0;}
+.pp-ov{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,rgba(0,0,0,0.85));}
+.pp-caption{position:absolute;bottom:36px;left:0;right:0;text-align:center;font-size:9px;font-weight:700;color:white;padding:0 8px;line-height:1.3;}
+.pp-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;background:rgba(255,79,46,0.85);display:flex;align-items:center;justify-content:center;}
+.pp-play svg{width:13px;height:13px;fill:white;margin-left:2px;}
+.pp-bar{position:absolute;bottom:0;left:0;right:0;height:32px;background:rgba(0,0,0,0.7);display:flex;align-items:center;padding:0 8px;gap:4px;}
+.pp-t{font-size:7px;font-weight:800;color:rgba(255,255,255,0.5);}
+.pp-prog{flex:1;height:2px;background:rgba(255,255,255,0.15);border-radius:2px;overflow:hidden;}
+.pp-fill{height:100%;background:var(--pop);width:40%;}
+
+.canvas-tools{
+  position:absolute;top:10px;left:50%;transform:translateX(-50%);
+  display:flex;gap:3px;background:var(--s2);border:0.5px solid var(--bdr2);
+  border-radius:8px;padding:3px;
+}
+.ct{padding:4px 8px;border-radius:5px;font-size:10px;font-weight:800;color:var(--txt3);cursor:pointer;}
+.ct.on{background:var(--s4);color:var(--txt);}
+
+.edit-controls-panel{
+  position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  display:flex;flex-direction:column;gap:8px;
+}
+.ec-btn{
+  width:38px;height:38px;border-radius:10px;background:var(--s2);
+  border:0.5px solid var(--bdr2);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+}
+.ec-btn:active{background:var(--s3);}
+.ec-btn svg{width:16px;height:16px;}
+.ec-btn.hot{border-color:rgba(255,79,46,0.4);}
+
+.scene-strip{
+  background:var(--s1);border-top:0.5px solid var(--bdr);
+  padding:8px 12px;display:flex;gap:7px;align-items:center;
+  overflow-x:auto;flex-shrink:0;
+}
+.scene-strip::-webkit-scrollbar{display:none;}
+.sc{
+  flex-shrink:0;width:60px;height:72px;border-radius:9px;
+  border:1.5px solid var(--bdr);overflow:hidden;cursor:pointer;
+  display:flex;flex-direction:column;
+}
+.sc.on{border-color:var(--pop);}
+.sc-th{flex:1;}
+.sc-dur{background:var(--s3);padding:2px 4px;text-align:center;font-size:8px;font-weight:800;color:var(--txt3);}
+.sc-add{
+  flex-shrink:0;width:60px;height:72px;border-radius:9px;
+  border:1px dashed var(--bdr2);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:3px;cursor:pointer;
+}
+.sc-add svg{width:16px;height:16px;}
+.sc-add span{font-size:8px;font-weight:800;color:var(--txt3);}
+.sc-add:active{border-color:var(--pop);}
+.bs-handle-area{
+  background:var(--s1);border-top:0.5px solid var(--bdr);
+  display:flex;flex-direction:column;flex-shrink:0;
+}
+.bs-handle-row{
+  display:flex;align-items:center;justify-content:center;
+  padding:8px 0 4px;cursor:pointer;
+}
+.bs-handle{width:32px;height:3px;background:var(--bdr2);border-radius:2px;}
+.bs-tabs{display:flex;border-bottom:0.5px solid var(--bdr);padding:0 4px;}
+.bst{
+  flex:1;padding:8px 0;text-align:center;font-size:11px;font-weight:800;
+  color:var(--txt3);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.15s;
+}
+.bst.on{color:var(--txt);border-bottom-color:var(--pop);}
+
+.bs-body{overflow-y:auto;padding:12px;}
+.bs-body::-webkit-scrollbar{display:none;}
+
+.ai-bar{
+  background:var(--s2);border:0.5px solid rgba(255,79,46,0.2);
+  border-radius:10px;padding:10px;margin-bottom:12px;
+}
+.ai-top{display:flex;align-items:center;gap:5px;margin-bottom:7px;}
+.aipulse{width:6px;height:6px;border-radius:50%;background:var(--pop);animation:pu 1.6s ease-in-out infinite;}
+@keyframes pu{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.ai-lbl{font-size:10px;font-weight:900;color:var(--pop);}
+.vibe-input{
+  width:100%;background:var(--s3);border:0.5px solid var(--bdr2);
+  border-radius:7px;padding:7px 9px;font-size:11px;color:var(--txt2);
+  font-family:var(--f);outline:none;resize:none;
+}
+.vibe-input::placeholder{color:var(--txt3);}
+.vibe-chips{display:flex;flex-wrap:wrap;gap:4px;margin:7px 0;}
+.vc{padding:3px 8px;border-radius:20px;font-size:10px;font-weight:800;cursor:pointer;}
+.ai-magic{
+  width:100%;padding:7px;border-radius:7px;background:var(--pop);
+  border:none;font-size:12px;font-weight:900;color:white;cursor:pointer;font-family:var(--f);
+}
+
+.adj-group{margin-bottom:14px;}
+.adj-lbl{font-size:9px;font-weight:900;color:var(--txt3);letter-spacing:1px;text-transform:uppercase;margin-bottom:7px;}
+.adj-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+.adj-k{font-size:11px;color:var(--txt2);flex:1;}
+.sl-wrap{flex:2;position:relative;height:12px;display:flex;align-items:center;}
+.sl-track{flex:1;height:3px;background:var(--s4);border-radius:2px;position:relative;}
+.sl-fill{height:100%;background:var(--pop);border-radius:2px;}
+.sl-thumb{position:absolute;top:50%;transform:translateY(-50%);width:10px;height:10px;border-radius:50%;background:var(--pop);}
+.adj-v{font-size:10px;font-weight:800;color:var(--txt);min-width:24px;text-align:right;}
+
+.mood-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-bottom:4px;}
+.mood{border-radius:7px;height:30px;cursor:pointer;border:1.5px solid transparent;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;}
+.mood.on{border-color:rgba(255,255,255,0.6);}
+
+.word-btn{
+  width:100%;padding:9px 10px;border-radius:7px;margin-bottom:5px;
+  background:var(--s3);border:0.5px solid var(--bdr2);font-size:11px;font-weight:800;
+  color:var(--txt2);cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px;
+  font-family:var(--f);
+}
+.word-btn svg{width:14px;height:14px;flex-shrink:0;}
+
+/* Episode Builder */
+.ep-header{padding:12px 16px;border-bottom:0.5px solid var(--bdr);flex-shrink:0;}
+.ep-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  background:rgba(255,79,46,0.1);border:0.5px solid rgba(255,79,46,0.25);
+  border-radius:5px;padding:3px 7px;margin-bottom:6px;
+}
+.ep-badge svg{width:10px;height:10px;}
+.ep-badge span{font-size:9px;font-weight:900;color:var(--pop);letter-spacing:0.5px;text-transform:uppercase;}
+.ep-title{font-size:15px;font-weight:900;color:var(--txt);}
+.ep-sub{font-size:10px;color:var(--txt3);margin-top:2px;}
+
+.ep-scene-row{
+  display:flex;gap:8px;padding:10px 16px;overflow-x:auto;
+  border-bottom:0.5px solid var(--bdr);flex-shrink:0;
+}
+.ep-scene-row::-webkit-scrollbar{display:none;}
+.eps{
+  flex-shrink:0;width:68px;border-radius:9px;border:1.5px solid var(--bdr);
+  overflow:hidden;cursor:pointer;transition:border-color 0.15s;
+}
+.eps.on{border-color:var(--pop);}
+.eps-th{height:44px;}
+.eps-meta{padding:4px 5px 5px;background:var(--s2);}
+.eps-name{font-size:9px;font-weight:800;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.eps-dur{font-size:8px;color:var(--txt3);}
+.eps-add{
+  flex-shrink:0;width:52px;height:68px;border-radius:9px;
+  border:1px dashed var(--bdr2);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:3px;cursor:pointer;
+}
+.eps-add svg{width:14px;height:14px;}
+.eps-add span{font-size:8px;font-weight:800;color:var(--txt3);}
+
+.ep-content{flex:1;overflow-y:auto;padding:14px 16px;}
+.ep-content::-webkit-scrollbar{display:none;}
+.sc-block-lbl{font-size:9px;font-weight:900;color:var(--txt3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;}
+.sc-scene-hdr{font-size:12px;font-weight:900;color:var(--txt);border-left:2px solid var(--pop);padding-left:7px;margin-bottom:7px;border-radius:0;}
+.sc-action{font-size:11px;color:var(--txt2);line-height:1.6;background:var(--s2);border-radius:7px;padding:9px 10px;border:0.5px solid var(--bdr);margin-bottom:10px;}
+.sc-char{text-align:center;font-size:10px;font-weight:900;color:var(--pop);letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;}
+.sc-dialogue{font-size:11px;color:var(--txt);line-height:1.6;text-align:center;padding:0 16px;margin-bottom:12px;}
+
+.ep-script-tools{
+  padding:10px 16px;border-top:0.5px solid var(--bdr);
+  display:flex;gap:6px;overflow-x:auto;flex-shrink:0;
+}
+.ep-script-tools::-webkit-scrollbar{display:none;}
+.est{
+  flex-shrink:0;padding:6px 12px;border-radius:7px;
+  background:var(--s3);border:0.5px solid var(--bdr2);
+  font-size:10px;font-weight:800;color:var(--txt2);cursor:pointer;font-family:var(--f);
+  white-space:nowrap;
+}
+
+.co-director{
+  margin:10px 16px;background:var(--s2);border:0.5px solid rgba(255,79,46,0.2);
+  border-radius:10px;padding:10px;flex-shrink:0;
+}
+.co-top{display:flex;align-items:center;gap:5px;margin-bottom:6px;}
+.co-top span{font-size:9px;font-weight:900;color:var(--pop);text-transform:uppercase;letter-spacing:0.5px;}
+.co-text{font-size:10px;color:var(--txt2);line-height:1.5;border-left:2px solid var(--pop);padding-left:7px;margin-bottom:7px;border-radius:0;}
+.co-btn{width:100%;padding:7px;border-radius:7px;background:var(--pop);border:none;font-size:11px;font-weight:900;color:white;cursor:pointer;font-family:var(--f);}
+
+/* Publish */
+.pub-hdr{padding:16px;border-bottom:0.5px solid var(--bdr);flex-shrink:0;}
+.pub-title{font-size:18px;font-weight:900;color:var(--txt);margin-bottom:3px;}
+.pub-sub{font-size:11px;color:var(--txt2);line-height:1.5;}
+
+.pub-plats{display:flex;flex-direction:column;gap:7px;padding:14px 16px;}
+.pub-plat-card{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:10px;
+  border:0.5px solid var(--bdr2);background:var(--s1);cursor:pointer;
+  transition:border-color 0.15s;
+}
+.pub-plat-card.on{border-color:var(--pop);}
+.pub-plat-card:active{background:var(--s2);}
+.ppc-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.ppc-name{font-size:13px;font-weight:900;color:var(--txt);flex:1;}
+.ppc-specs{font-size:10px;color:var(--txt3);}
+.ppc-check{
+  width:18px;height:18px;border-radius:50%;flex-shrink:0;
+  border:1.5px solid var(--bdr2);display:flex;align-items:center;justify-content:center;
+  transition:all 0.15s;
+}
+.pub-plat-card.on .ppc-check{background:var(--pop);border-color:var(--pop);}
+.ppc-tick{display:none;}
+.pub-plat-card.on .ppc-tick{display:block;}
+
+.ai-gen-box{
+  margin:0 16px 16px;background:var(--s2);border:0.5px solid var(--bdr2);
+  border-radius:10px;padding:12px;
+}
+.ag-title{display:flex;align-items:center;gap:5px;margin-bottom:10px;font-size:12px;font-weight:900;color:var(--txt);}
+.ag-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;}
+.ag-item{background:var(--s3);border-radius:7px;padding:9px 10px;border:0.5px solid var(--bdr);}
+.ag-lbl{font-size:8px;font-weight:900;color:var(--txt3);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;}
+.ag-val{font-size:10px;color:var(--txt2);line-height:1.45;}
+
+.pub-go{
+  margin:0 16px 24px;width:calc(100% - 32px);padding:14px;border-radius:12px;
+  background:var(--pop);border:none;font-size:15px;font-weight:900;color:white;
+  cursor:pointer;font-family:var(--f);display:block;
+}
+    </style>
+</head>
+<body>
+<div class="phone-shell">
+<div class="notch"></div>
+<div class="screen">
+
+  <!-- Back button to return to main app -->
+  <div class="back-link">
+    <div class="back-btn" onclick="window.location.href='index.html';">
+      <svg viewBox="0 0 20 20" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><polyline points="12,4 6,10 12,16"/></svg>
+      <span>Back to PopApp</span>
+    </div>
+  </div>
+
+  <div class="status">
+    <span>9:41</span>
+    <div class="s-icons">
+      <svg width="15" height="10" viewBox="0 0 16 11" fill="white"><rect x="0" y="3" width="3" height="8" rx="1" opacity="0.4"/><rect x="4" y="2" width="3" height="9" rx="1" opacity="0.6"/><rect x="8" y="0" width="3" height="11" rx="1" opacity="0.8"/><rect x="12" y="0" width="3" height="11" rx="1"/></svg>
+      <div class="batt"></div>
+    </div>
+  </div>
+    <!-- ═══ HOME PAGE ═══ -->
+  <div class="page on" id="pg-home">
+    <div class="app-bar">
+      <div class="app-brand">
+        <div class="app-dot"><svg viewBox="0 0 30 30" fill="none"><circle cx="15" cy="13" r="8" fill="#FFF6EF"/><circle cx="11" cy="10" r="2.5" fill="#1a0a00"/><circle cx="19" cy="10" r="2.5" fill="#1a0a00"/><circle cx="11" cy="10" r="1.5" fill="#FF4F2E" opacity="0.7"/><circle cx="19" cy="10" r="1.5" fill="#FF4F2E" opacity="0.7"/><ellipse cx="15" cy="14" rx="1.5" ry="1" fill="#c08070"/></svg></div>
+        <span class="app-name">pop</span>
+        <span class="app-tag">STUDIO</span>
+      </div>
+      <div class="app-bar-r">
+        <div class="mode-pill easy" id="modePill" onclick="toggleMode()">
+          <div class="mpd" id="modeDot" style="background:#1D9E75;"></div>
+          <span id="modeTxt">Easy</span>
+        </div>
+        <div class="avi">K</div>
+      </div>
+    </div>
+
+    <div class="scroll">
+      <div class="h-hero">
+        <div class="h-q">What do you want to make?</div>
+        <div class="h-sub">Pick a starting point — AI loads everything for you.</div>
+      </div>
+
+      <div class="make-grid">
+        <div class="mk" onclick="showPage('creator')">
+          <div class="mk-icon" style="background:rgba(29,158,117,0.12);"><svg viewBox="0 0 20 20" fill="none" stroke="#1D9E75" stroke-width="1.8" stroke-linecap="round" width="18" height="18"><rect x="2" y="3" width="16" height="11" rx="2"/><line x1="6" y1="17" x2="14" y2="17"/><line x1="10" y1="14" x2="10" y2="17"/></svg></div>
+          <div class="mk-title">Short clip</div>
+          <div class="mk-sub">Moments, stories, reactions.</div>
+        </div>
+        <div class="mk" onclick="showPage('creator')">
+          <div class="mk-icon" style="background:rgba(55,138,221,0.12);"><svg viewBox="0 0 20 20" fill="none" stroke="#378ADD" stroke-width="1.8" stroke-linecap="round" width="18" height="18"><circle cx="10" cy="10" r="8"/><polygon points="8,7 14,10 8,13" fill="#378ADD" stroke="none"/></svg></div>
+          <div class="mk-title">Tutorial</div>
+          <div class="mk-sub">Step by step. Any topic.</div>
+        </div>
+        <div class="mk" onclick="showPage('episode')">
+          <div class="mk-icon" style="background:rgba(255,79,46,0.12);"><svg viewBox="0 0 20 20" fill="none" stroke="#FF4F2E" stroke-width="1.8" stroke-linecap="round" width="18" height="18"><path d="M3 4l14 6-14 6V4z"/><line x1="17" y1="4" x2="17" y2="16"/></svg></div>
+          <div class="mk-title">Pop-movie</div>
+          <div class="mk-sub">5–7 min cinematic series.</div>
+        </div>
+        <div class="mk" onclick="showPage('creator')">
+          <div class="mk-icon" style="background:rgba(127,119,221,0.12);"><svg viewBox="0 0 20 20" fill="none" stroke="#7F77DD" stroke-width="1.8" stroke-linecap="round" width="18" height="18"><rect x="2" y="2" width="7" height="7" rx="1.5"/><rect x="11" y="2" width="7" height="7" rx="1.5"/><rect x="2" y="11" width="7" height="7" rx="1.5"/><rect x="11" y="11" width="7" height="7" rx="1.5"/></svg></div>
+          <div class="mk-title">Trailer</div>
+          <div class="mk-sub">Hype cuts. Music sync.</div>
+        </div>
+        <div class="mk" onclick="showPage('creator')">
+          <div class="mk-icon" style="background:rgba(239,159,39,0.12);"><svg viewBox="0 0 20 20" fill="none" stroke="#EF9F27" stroke-width="1.8" stroke-linecap="round" width="18" height="18"><rect x="2" y="4" width="16" height="12" rx="2"/><line x1="6" y1="4" x2="6" y2="16"/><line x1="14" y1="4" x2="14" y2="16"/></svg></div>
+          <div class="mk-title">Meme</div>
+          <div class="mk-sub">Quick and shareable.</div>
+        </div>
+        <div class="mk" onclick="showPage('creator')">
+          <div class="mk-icon" style="background:rgba(212,83,126,0.12);"><svg viewBox="0 0 20 20" fill="none" stroke="#D4537E" stroke-width="1.8" stroke-linecap="round" width="18" height="18"><rect x="2" y="3" width="16" height="14" rx="2"/><path d="M2 9h16M8 3v6"/></svg></div>
+          <div class="mk-title">Ad</div>
+          <div class="mk-sub">Promo and brand content.</div>
+        </div>
+      </div>
+
+      <div class="sec-hdr"><span class="sec-lbl">Templates</span><span class="sec-more">See all</span></div>
+      <div class="tpl-row">
+        <div class="tpl" onclick="showPage('creator')">
+          <div class="tpl-th" style="background:linear-gradient(135deg,#0d2818,#1D9E75);"><div class="tpl-badge" style="background:rgba(29,158,117,0.3);color:#5DCAA5;">vlog</div></div>
+          <div class="tpl-meta"><div class="tpl-name">Sunrise energy</div><div class="tpl-ct">84K uses</div></div>
+        </div>
+        <div class="tpl" onclick="showPage('episode')">
+          <div class="tpl-th" style="background:linear-gradient(135deg,#1a0533,#7F77DD);"><div class="tpl-badge" style="background:rgba(127,119,221,0.3);color:#AFA9EC;">thriller</div></div>
+          <div class="tpl-meta"><div class="tpl-name">Midnight mood</div><div class="tpl-ct">62K uses</div></div>
+        </div>
+        <div class="tpl" onclick="showPage('episode')">
+          <div class="tpl-th" style="background:linear-gradient(135deg,#1a0808,#D85A30);"><div class="tpl-badge" style="background:rgba(255,79,46,0.25);color:#FF6E52;">pop-movie</div></div>
+          <div class="tpl-meta"><div class="tpl-name">Cinematic drama</div><div class="tpl-ct">118K uses</div></div>
+        </div>
+        <div class="tpl" onclick="showPage('creator')">
+          <div class="tpl-th" style="background:linear-gradient(135deg,#0a0a2a,#378ADD);"><div class="tpl-badge" style="background:rgba(55,138,221,0.25);color:#85B7EB;">tutorial</div></div>
+          <div class="tpl-meta"><div class="tpl-name">Clean explainer</div><div class="tpl-ct">203K uses</div></div>
+        </div>
+        <div class="tpl" onclick="showPage('creator')">
+          <div class="tpl-th" style="background:linear-gradient(135deg,#1a1000,#EF9F27);"><div class="tpl-badge" style="background:rgba(239,159,39,0.25);color:#FAC775;">promo</div></div>
+          <div class="tpl-meta"><div class="tpl-name">Bold product</div><div class="tpl-ct">91K uses</div></div>
+        </div>
+      </div>
+
+      <div class="sec-hdr"><span class="sec-lbl">Your work</span><span class="sec-more">See all</span></div>
+      <div class="work-grid">
+        <div class="wk" onclick="showPage('creator')">
+          <div class="wk-th" style="background:linear-gradient(135deg,#1a0533,#8B1A4A);"><div class="wk-type" style="background:rgba(255,79,46,0.85);color:white;">series</div></div>
+          <div class="wk-meta"><div class="wk-name">The Last Train</div><div class="wk-info">Ep 3 · 6:12 · 2h ago</div></div>
+        </div>
+        <div class="wk" onclick="showPage('creator')">
+          <div class="wk-th" style="background:linear-gradient(135deg,#0d2818,#2d8a48);"><div class="wk-type" style="background:rgba(29,158,117,0.85);color:white;">clip</div></div>
+          <div class="wk-meta"><div class="wk-name">Rift Valley AM</div><div class="wk-info">0:47 · Live · 890K</div></div>
+        </div>
+        <div class="wk" onclick="showPage('creator')">
+          <div class="wk-th" style="background:linear-gradient(135deg,#0a0a2a,#1a1a6a);"><div class="wk-type" style="background:rgba(127,119,221,0.85);color:white;">standalone</div></div>
+          <div class="wk-meta"><div class="wk-name">Echoes</div><div class="wk-info">5:48 · Draft</div></div>
+        </div>
+        <div class="wk" onclick="showPage('creator')">
+          <div class="wk-th" style="background:linear-gradient(135deg,#1a1000,#5c4000);"><div class="wk-type" style="background:rgba(186,117,23,0.85);color:white;">clip</div></div>
+          <div class="wk-meta"><div class="wk-name">Nairobi BTS</div><div class="wk-info">1:14 · Unedited</div></div>
+        </div>
+      </div>
+
+      <div class="sec-hdr"><span class="sec-lbl">Magic tools</span></div>
+      <div class="magic-grid">
+        <div class="mgc"><svg viewBox="0 0 18 18" fill="none" stroke="#1D9E75" stroke-width="1.6" stroke-linecap="round" width="16" height="16"><path d="M3 13l4-4 3 3 4-5 3 6H3z"/></svg><div class="mgc-n">Describe the vibe</div><div class="mgc-s">AI builds music, pacing and captions from one sentence.</div></div>
+        <div class="mgc"><svg viewBox="0 0 18 18" fill="none" stroke="#7F77DD" stroke-width="1.6" stroke-linecap="round" width="16" height="16"><circle cx="9" cy="9" r="7"/><path d="M6 9l2 2 4-4"/></svg><div class="mgc-n">AI director</div><div class="mgc-s">Set a genre tone, AI styles the whole project.</div></div>
+        <div class="mgc"><svg viewBox="0 0 18 18" fill="none" stroke="#378ADD" stroke-width="1.6" stroke-linecap="round" width="16" height="16"><circle cx="9" cy="7" r="3"/><path d="M4 17a5 5 0 0110 0"/></svg><div class="mgc-n">Voice clone</div><div class="mgc-s">5 seconds of your voice to narrate anything.</div></div>
+        <div class="mgc"><svg viewBox="0 0 18 18" fill="none" stroke="#EF9F27" stroke-width="1.6" stroke-linecap="round" width="16" height="16"><rect x="2" y="4" width="14" height="10" rx="2"/><line x1="5" y1="8" x2="13" y2="8"/><line x1="5" y1="11" x2="9" y2="11"/></svg><div class="mgc-n">Language swap</div><div class="mgc-s">Dub into 20+ languages with lip-sync.</div></div>
+        <div class="mgc"><svg viewBox="0 0 18 18" fill="none" stroke="#D4537E" stroke-width="1.6" stroke-linecap="round" width="16" height="16"><path d="M9 2v14M2 9h14"/><circle cx="9" cy="9" r="3"/></svg><div class="mgc-n">Remove background</div><div class="mgc-s">One tap. No green screen needed.</div></div>
+        <div class="mgc"><svg viewBox="0 0 18 18" fill="none" stroke="#5DCAA5" stroke-width="1.6" stroke-linecap="round" width="16" height="16"><rect x="2" y="5" width="14" height="8" rx="2"/><line x1="5" y1="8" x2="13" y2="8"/><line x1="5" y1="11" x2="9" y2="11"/></svg><div class="mgc-n">Auto-caption</div><div class="mgc-s">Accurate subtitles in seconds.</div></div>
+      </div>
+      <div style="height:16px;"></div>
+    </div>
+
+    <div class="bottom-tabs">
+      <div class="btab on" id="bt-home" onclick="showPage('home')">
+        <div class="btab-icon"><svg viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="0"><path d="M3 12L12 3l9 9v9a1 1 0 01-1 1h-5v-5H9v5H4a1 1 0 01-1-1v-9z"/></svg></div>
+        <span class="btab-lbl">Home</span>
+      </div>
+      <div class="btab" id="bt-explore">
+        <div class="btab-icon"><svg viewBox="0 0 24 24" fill="rgba(255,255,255,0.3)" stroke="rgba(255,255,255,0.3)" stroke-width="0"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm1 4.5l-4 7 7-4-3-3z"/></svg></div>
+        <span class="btab-lbl">Explore</span>
+      </div>
+      <div class="btab btab-center" onclick="showPage('creator')">
+        <div class="btab-pill"><svg viewBox="0 0 24 24" width="16" height="16"><rect x="2" y="3" width="20" height="14" rx="3" fill="white"/><polygon points="10,8 16,10 10,12" fill="#FF4F2E"/></svg></div>
+        <span class="btab-lbl">Create</span>
+      </div>
+      <div class="btab" id="bt-inbox">
+        <div class="btab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+        <span class="btab-lbl">Inbox</span>
+      </div>
+      <div class="btab" id="bt-profile">
+        <div class="btab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+        <span class="btab-lbl">Profile</span>
+      </div>
+    </div>
+  </div>
+    <!-- ═══ CREATOR EDITOR PAGE ═══ -->
+  <div class="page" id="pg-creator">
+    <div class="app-bar">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:32px;height:32px;border-radius:8px;background:var(--s3);display:flex;align-items:center;justify-content:center;cursor:pointer;" onclick="showPage('home')">
+          <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"><polyline points="13,4 7,10 13,16"/></svg>
+        </div>
+        <input style="background:transparent;border:none;outline:none;font-size:13px;font-weight:800;color:var(--txt);font-family:var(--f);width:160px;" value="Rift Valley Morning"/>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button style="padding:5px 10px;border-radius:7px;font-size:11px;font-weight:800;background:transparent;border:0.5px solid var(--bdr2);color:var(--txt2);cursor:pointer;font-family:var(--f);">Oops</button>
+        <button style="padding:5px 10px;border-radius:7px;font-size:11px;font-weight:900;background:var(--pop);border:none;color:white;cursor:pointer;font-family:var(--f);" onclick="showPage('publish')">Save &amp; share</button>
+      </div>
+    </div>
+
+    <div class="preview-area">
+      <div class="dotbg"></div>
+      <div class="canvas-tools">
+        <div class="ct on">9:16</div>
+        <div class="ct">1:1</div>
+        <div class="ct">16:9</div>
+      </div>
+      <div class="phone-preview">
+        <div class="pp-bg" style="background:linear-gradient(165deg,#0a1f0e,#1a5c2a,#2d8a44);"></div>
+        <div class="pp-ov"></div>
+        <div class="pp-caption">Morning in the Rift Valley hits different</div>
+        <div class="pp-play"><svg viewBox="0 0 20 20" width="13" height="13"><polygon points="4,2 17,10 4,18" fill="white"/></svg></div>
+        <div class="pp-bar">
+          <span class="pp-t">0:18</span>
+          <div class="pp-prog"><div class="pp-fill"></div></div>
+          <span class="pp-t">0:47</span>
+        </div>
+      </div>
+      <div class="edit-controls-panel">
+        <div class="ec-btn hot">
+          <svg viewBox="0 0 18 18" fill="none" stroke="#FF4F2E" stroke-width="1.6" stroke-linecap="round" width="16" height="16"><path d="M3 13l4-4 3 3 4-5 3 6H3z"/></svg>
+        </div>
+        <div class="ec-btn">
+          <svg viewBox="0 0 18 18" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.6" stroke-linecap="round" width="16" height="16"><rect x="2" y="5" width="14" height="8" rx="2"/><line x1="5" y1="8" x2="13" y2="8"/></svg>
+        </div>
+        <div class="ec-btn">
+          <svg viewBox="0 0 18 18" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.6" stroke-linecap="round" width="16" height="16"><circle cx="9" cy="8" r="3"/><path d="M4 17a5 5 0 0110 0"/></svg>
+        </div>
+        <div class="ec-btn">
+          <svg viewBox="0 0 18 18" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.6" stroke-linecap="round" width="16" height="16"><circle cx="9" cy="9" r="3"/><path d="M9 1v3M9 14v3M1 9h3M14 9h3"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="scene-strip">
+      <div class="sc on"><div class="sc-th" style="background:linear-gradient(135deg,#0a1f0e,#2d8a44);"></div><div class="sc-dur">0:18</div></div>
+      <div class="sc"><div class="sc-th" style="background:linear-gradient(135deg,#1a0533,#4a1060);"></div><div class="sc-dur">0:22</div></div>
+      <div class="sc"><div class="sc-th" style="background:linear-gradient(135deg,#1a0808,#8a2020);"></div><div class="sc-dur">0:07</div></div>
+      <div class="sc-add">
+        <svg viewBox="0 0 16 16" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-linecap="round" width="16" height="16"><line x1="8" y1="2" x2="8" y2="14"/><line x1="2" y1="8" x2="14" y2="8"/></svg>
+        <span>Add clip</span>
+      </div>
+      <div style="margin-left:auto;display:flex;align-items:center;">
+        <div style="display:flex;align-items:center;gap:5px;padding:4px 8px;border-radius:6px;background:var(--s3);cursor:pointer;" onclick="toggleTl()">
+          <svg viewBox="0 0 14 14" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" stroke-linecap="round" width="12" height="12"><line x1="1" y1="5" x2="13" y2="5"/><line x1="1" y1="9" x2="13" y2="9"/></svg>
+          <span style="font-size:10px;font-weight:800;color:rgba(255,255,255,0.4);">Arrange</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="tl-panel" style="display:none;background:var(--s1);border-top:0.5px solid var(--bdr);padding:8px 12px;flex-shrink:0;">
+      <div style="display:flex;flex-direction:column;gap:5px;">
+        <div style="display:flex;align-items:center;gap:7px;">
+          <span style="width:40px;font-size:8px;font-weight:800;color:var(--txt3);text-transform:uppercase;flex-shrink:0;">Video</span>
+          <div style="flex:1;height:16px;background:var(--s3);border-radius:3px;position:relative;overflow:hidden;">
+            <div style="position:absolute;top:2px;bottom:2px;left:1%;width:36%;background:#1E5C3A;border-radius:2px;display:flex;align-items:center;padding:0 4px;"><span style="font-size:7px;font-weight:800;color:rgba(255,255,255,0.8);">Clip A</span></div>
+            <div style="position:absolute;top:2px;bottom:2px;left:38%;width:28%;background:#1a0533;border-radius:2px;display:flex;align-items:center;padding:0 4px;"><span style="font-size:7px;font-weight:800;color:rgba(255,255,255,0.8);">Clip B</span></div>
+            <div style="position:absolute;top:0;bottom:0;width:1.5px;background:var(--pop);left:40%;"></div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:7px;">
+          <span style="width:40px;font-size:8px;font-weight:800;color:var(--txt3);text-transform:uppercase;flex-shrink:0;">Words</span>
+          <div style="flex:1;height:16px;background:var(--s3);border-radius:3px;position:relative;overflow:hidden;">
+            <div style="position:absolute;top:2px;bottom:2px;left:18%;width:44%;background:#3A2A00;border-radius:2px;display:flex;align-items:center;padding:0 4px;"><span style="font-size:7px;font-weight:800;color:rgba(255,255,255,0.8);">Caption</span></div>
+            <div style="position:absolute;top:0;bottom:0;width:1.5px;background:var(--pop);left:40%;"></div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:7px;">
+          <span style="width:40px;font-size:8px;font-weight:800;color:var(--txt3);text-transform:uppercase;flex-shrink:0;">Music</span>
+          <div style="flex:1;height:16px;background:var(--s3);border-radius:3px;position:relative;overflow:hidden;">
+            <div style="position:absolute;top:2px;bottom:2px;left:1%;width:97%;background:#1E1A3A;border-radius:2px;display:flex;align-items:center;padding:0 4px;"><span style="font-size:7px;font-weight:800;color:rgba(255,255,255,0.8);">AI music · sunrise ambient</span></div>
+            <div style="position:absolute;top:0;bottom:0;width:1.5px;background:var(--pop);left:40%;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bs-handle-area">
+      <div class="bs-handle-row" onclick="toggleBs()"><div class="bs-handle"></div></div>
+      <div class="bs-tabs">
+        <div class="bst on" id="bst0" onclick="setBst(0)">Magic</div>
+        <div class="bst" id="bst1" onclick="setBst(1)">Look</div>
+        <div class="bst" id="bst2" onclick="setBst(2)">Words</div>
+      </div>
+      <div id="bs-body" class="bs-body" style="max-height:200px;">
+        <div id="bsp-magic">
+          <div class="ai-bar">
+            <div class="ai-top"><div class="aipulse"></div><span class="ai-lbl">Magic AI</span></div>
+            <textarea class="vibe-input" rows="2" placeholder="Describe the vibe… happy morning, warm, upbeat"></textarea>
+            <div class="vibe-chips">
+              <div class="vc" style="background:rgba(29,158,117,0.12);color:#5DCAA5;border:0.5px solid rgba(29,158,117,0.25);">Morning vlog</div>
+              <div class="vc" style="background:rgba(127,119,221,0.12);color:#AFA9EC;border:0.5px solid rgba(127,119,221,0.25);">90s thriller</div>
+              <div class="vc" style="background:rgba(239,159,39,0.12);color:#FAC775;border:0.5px solid rgba(239,159,39,0.25);">Cinematic</div>
+              <div class="vc" style="background:rgba(212,83,126,0.12);color:#ED93B1;border:0.5px solid rgba(212,83,126,0.25);">Emotional</div>
+            </div>
+            <button class="ai-magic">Make it magic</button>
+          </div>
+        </div>
+        <div id="bsp-look" style="display:none;">
+          <div class="adj-group">
+            <div class="adj-lbl">Adjust look</div>
+            <div class="adj-row"><span class="adj-k">Brightness</span><div class="sl-wrap"><div class="sl-track"><div class="sl-fill" style="width:62%;"></div><div class="sl-thumb" style="left:62%;"></div></div></div><span class="adj-v">+12</span></div>
+            <div class="adj-row"><span class="adj-k">Contrast</span><div class="sl-wrap"><div class="sl-track"><div class="sl-fill" style="width:45%;"></div><div class="sl-thumb" style="left:45%;"></div></div></div><span class="adj-v">+5</span></div>
+            <div class="adj-row"><span class="adj-k">Warmth</span><div class="sl-wrap"><div class="sl-track"><div class="sl-fill" style="width:72%;"></div><div class="sl-thumb" style="left:72%;"></div></div></div><span class="adj-v">+18</span></div>
+          </div>
+          <div class="adj-group">
+            <div class="adj-lbl">Mood pack</div>
+            <div class="mood-grid">
+              <div class="mood on" style="background:linear-gradient(135deg,#3A2000,#8a5010);color:#FAC775;">Golden</div>
+              <div class="mood" style="background:linear-gradient(135deg,#001a2a,#004060);color:#85B7EB;">Blue hour</div>
+              <div class="mood" style="background:linear-gradient(135deg,#0d1a0d,#1D5C1D);color:#97C459;">Forest</div>
+              <div class="mood" style="background:linear-gradient(135deg,#1a0010,#4a0030);color:#ED93B1;">Neon rose</div>
+              <div class="mood" style="background:linear-gradient(135deg,#1a1a1a,#3a3a3a);color:#B4B2A9;">Chrome</div>
+              <div class="mood" style="background:linear-gradient(135deg,#1a0808,#5c1010);color:#F09595;">Blood red</div>
+            </div>
+          </div>
+        </div>
+        <div id="bsp-words" style="display:none;">
+          <button class="word-btn"><svg viewBox="0 0 14 14" fill="none" stroke="#FF4F2E" stroke-width="1.5" stroke-linecap="round" width="14" height="14"><path d="M2 4h10M2 7h7M2 10h5"/></svg>Add text</button>
+          <button class="word-btn"><svg viewBox="0 0 14 14" fill="none" stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round" width="14" height="14"><path d="M2 11l4-4 2 2 4-5 2 6H2z"/></svg>Auto-caption (AI)</button>
+          <button class="word-btn"><svg viewBox="0 0 14 14" fill="none" stroke="#7F77DD" stroke-width="1.5" stroke-linecap="round" width="14" height="14"><circle cx="7" cy="5" r="2.5"/><path d="M3 13a4 4 0 018 0"/></svg>AI voiceover</button>
+          <button class="word-btn"><svg viewBox="0 0 14 14" fill="none" stroke="#EF9F27" stroke-width="1.5" stroke-linecap="round" width="14" height="14"><rect x="1" y="3" width="12" height="8" rx="1"/><line x1="4" y1="6" x2="10" y2="6"/><line x1="4" y1="9" x2="7" y2="9"/></svg>Language swap (20+ langs)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+    <!-- ═══ EPISODE BUILDER PAGE ═══ -->
+  <div class="page" id="pg-episode">
+    <div class="app-bar">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:32px;height:32px;border-radius:8px;background:var(--s3);display:flex;align-items:center;justify-content:center;cursor:pointer;" onclick="showPage('home')">
+          <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"><polyline points="13,4 7,10 13,16"/></svg>
+        </div>
+        <div>
+          <div class="ep-badge">
+            <svg viewBox="0 0 12 12" fill="none" stroke="#FF4F2E" stroke-width="1.5" stroke-linecap="round" width="10" height="10"><path d="M2 2l8 4-8 4V2z"/><line x1="10" y1="2" x2="10" y2="10"/></svg>
+            <span>Episode builder</span>
+          </div>
+        </div>
+      </div>
+      <button style="padding:5px 12px;border-radius:8px;background:var(--pop);border:none;font-size:11px;font-weight:900;color:white;cursor:pointer;font-family:var(--f);" onclick="showPage('publish')">Save &amp; share</button>
+    </div>
+
+    <div style="padding:0 16px 10px;border-bottom:0.5px solid var(--bdr);flex-shrink:0;">
+      <div style="font-size:14px;font-weight:900;color:var(--txt);">The Last Train to Nairobi</div>
+      <div style="font-size:10px;color:var(--txt3);margin-top:2px;">Series · Episode 3 of 8</div>
+    </div>
+
+    <div class="ep-scene-row">
+      <div class="eps on">
+        <div class="eps-th" style="background:linear-gradient(135deg,#1a0533,#4a1060);"></div>
+        <div class="eps-meta"><div class="eps-name">The platform</div><div class="eps-dur">0:00–1:12</div></div>
+      </div>
+      <div class="eps">
+        <div class="eps-th" style="background:linear-gradient(135deg,#1a0808,#5c1010);"></div>
+        <div class="eps-meta"><div class="eps-name">Chase</div><div class="eps-dur">1:12–2:44</div></div>
+      </div>
+      <div class="eps">
+        <div class="eps-th" style="background:linear-gradient(135deg,#001a1a,#004040);"></div>
+        <div class="eps-meta"><div class="eps-name">The reveal</div><div class="eps-dur">2:44–4:18</div></div>
+      </div>
+      <div class="eps">
+        <div class="eps-th" style="background:linear-gradient(135deg,#1a1200,#4a3800);"></div>
+        <div class="eps-meta"><div class="eps-name">Final run</div><div class="eps-dur">4:18–6:12</div></div>
+      </div>
+      <div class="eps-add">
+        <svg viewBox="0 0 14 14" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-linecap="round" width="14" height="14"><line x1="7" y1="2" x2="7" y2="12"/><line x1="2" y1="7" x2="12" y2="7"/></svg>
+        <span>Add</span>
+      </div>
+    </div>
+
+    <div class="ep-content">
+      <div style="margin-bottom:12px;">
+        <div class="sc-block-lbl">Scene 01 — The platform</div>
+        <div class="sc-scene-hdr">INT. NAIROBI STATION — NIGHT</div>
+        <div class="sc-action">The station is nearly empty. AMARA (28) stands at the edge of Platform 4, checking her watch. A train whistle echoes. Steam rises from the tracks below.</div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div class="sc-char">Amara</div>
+        <div class="sc-dialogue">"If that train leaves without me — everything we planned falls apart."</div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div class="sc-action">She looks over her shoulder. A FIGURE in a dark coat watches from the far end of the platform. Their eyes meet briefly before the FIGURE turns away.</div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div class="sc-block-lbl">Scene 02 — Midnight chase</div>
+        <div class="sc-scene-hdr">EXT. TRAIN YARD — CONTINUOUS</div>
+        <div class="sc-action">Amara runs between rail carriages. Guard boots gaining fast. She ducks under a coupling and holds her breath.</div>
+      </div>
+      <div>
+        <div class="sc-char">Guard (V.O.)</div>
+        <div class="sc-dialogue">"She's in Yard 3. All units move now."</div>
+      </div>
+    </div>
+
+    <div class="co-director">
+      <div class="co-top"><div class="aipulse"></div><span>AI co-director</span></div>
+      <div class="co-text">Scene 02 is 14s over pacing benchmark. Consider tightening the guard radio line or cutting to the door moment sooner.</div>
+      <button class="co-btn">Generate tighter cut</button>
+    </div>
+
+    <div class="ep-script-tools">
+      <button class="est">Generate next scene</button>
+      <button class="est">Rewrite dialogue (AI)</button>
+      <button class="est">Auto-storyboard</button>
+      <button class="est">Export screenplay</button>
+    </div>
+  </div>
+
+  <!-- ═══ PUBLISH PAGE ═══ -->
+  <div class="page" id="pg-publish">
+    <div class="app-bar">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:32px;height:32px;border-radius:8px;background:var(--s3);display:flex;align-items:center;justify-content:center;cursor:pointer;" onclick="showPage('creator')">
+          <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"><polyline points="13,4 7,10 13,16"/></svg>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:900;color:var(--txt);">Save &amp; share</div>
+          <div style="font-size:10px;color:var(--txt3);">AI optimises for each platform</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="scroll">
+      <div class="pub-plats">
+        <div class="pub-plat-card on" onclick="this.classList.toggle('on')">
+          <div class="ppc-dot" style="background:#FF4F2E;"></div>
+          <div><div class="ppc-name">popapp</div><div class="ppc-specs">9:16 · 4K · auto-tags · auto-thumbnail</div></div>
+          <div class="ppc-check"><svg class="ppc-tick" viewBox="0 0 10 10" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" width="10" height="10"><polyline points="2,5 4,7 8,3"/></svg></div>
+        </div>
+        <div class="pub-plat-card on" onclick="this.classList.toggle('on')">
+          <div class="ppc-dot" style="background:#1D9E75;"></div>
+          <div><div class="ppc-name">TikTok / Reels</div><div class="ppc-specs">9:16 · 1080p · trending tags</div></div>
+          <div class="ppc-check"><svg class="ppc-tick" viewBox="0 0 10 10" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" width="10" height="10"><polyline points="2,5 4,7 8,3"/></svg></div>
+        </div>
+        <div class="pub-plat-card" onclick="this.classList.toggle('on')">
+          <div class="ppc-dot" style="background:#378ADD;"></div>
+          <div><div class="ppc-name">YouTube</div><div class="ppc-specs">16:9 · 4K · auto-chapters</div></div>
+          <div class="ppc-check"><svg class="ppc-tick" viewBox="0 0 10 10" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" width="10" height="10"><polyline points="2,5 4,7 8,3"/></svg></div>
+        </div>
+        <div class="pub-plat-card" onclick="this.classList.toggle('on')">
+          <div class="ppc-dot" style="background:#25D366;"></div>
+          <div><div class="ppc-name">WhatsApp status</div><div class="ppc-specs">9:16 · 720p · max 30s trimmed</div></div>
+          <div class="ppc-check"><svg class="ppc-tick" viewBox="0 0 10 10" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" width="10" height="10"><polyline points="2,5 4,7 8,3"/></svg></div>
+        </div>
+        <div class="pub-plat-card" onclick="this.classList.toggle('on')">
+          <div class="ppc-dot" style="background:#EF9F27;"></div>
+          <div><div class="ppc-name">GIF export</div><div class="ppc-specs">Select clip · looping · max 15s</div></div>
+          <div class="ppc-check"><svg class="ppc-tick" viewBox="0 0 10 10" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" width="10" height="10"><polyline points="2,5 4,7 8,3"/></svg></div>
+        </div>
+        <div class="pub-plat-card" onclick="this.classList.toggle('on')">
+          <div class="ppc-dot" style="background:#7F77DD;"></div>
+          <div><div class="ppc-name">Collaborate link</div><div class="ppc-specs">Share edit · others add clips &amp; comments</div></div>
+          <div class="ppc-check"><svg class="ppc-tick" viewBox="0 0 10 10" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" width="10" height="10"><polyline points="2,5 4,7 8,3"/></svg></div>
+        </div>
+      </div>
+
+      <div class="ai-gen-box">
+        <div class="ag-title"><div class="aipulse"></div>AI generated for you</div>
+        <div class="ag-grid">
+          <div class="ag-item"><div class="ag-lbl">Title</div><div class="ag-val">Morning in the Rift Valley — Kenya's Golden Hour</div></div>
+          <div class="ag-item"><div class="ag-lbl">Hashtags</div><div class="ag-val">#Kenya #RiftValley #GoldenHour #popapp</div></div>
+          <div class="ag-item"><div class="ag-lbl">Description</div><div class="ag-val">No alarm needed when the view does it for you. Shot at dawn.</div></div>
+          <div class="ag-item"><div class="ag-lbl">Best time</div><div class="ag-val">Today · 7:00 PM EAT — peak Kenya creator window</div></div>
+        </div>
+      </div>
+
+      <button class="pub-go">Publish now to all selected</button>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+var curPage='home';
+function showPage(p){
+  ['home','creator','episode','publish'].forEach(function(id){
+    var el=document.getElementById('pg-'+id);
+    if(el) el.classList.toggle('on', id===p);
+  });
+  curPage=p;
+}
+
+var tlOpen=false;
+function toggleTl(){
+  tlOpen=!tlOpen;
+  document.getElementById('tl-panel').style.display=tlOpen?'block':'none';
+}
+
+var bsOpen=true;
+function toggleBs(){
+  bsOpen=!bsOpen;
+  document.getElementById('bs-body').style.maxHeight=bsOpen?'200px':'0';
+}
+
+function setBst(i){
+  ['magic','look','words'].forEach(function(n,j){
+    document.getElementById('bsp-'+n).style.display=j===i?'block':'none';
+    document.getElementById('bst'+j).classList.toggle('on',j===i);
+  });
+}
+
+var proMode=false;
+function toggleMode(){
+  proMode=!proMode;
+  var pill=document.getElementById('modePill');
+  var dot=document.getElementById('modeDot');
+  var txt=document.getElementById('modeTxt');
+  if(proMode){
+    pill.className='mode-pill pro';
+    dot.style.background='#7F77DD';
+    txt.textContent='Pro';
+    if(curPage==='creator'){ tlOpen=true; document.getElementById('tl-panel').style.display='block'; }
+  } else {
+    pill.className='mode-pill easy';
+    dot.style.background='#1D9E75';
+    txt.textContent='Easy';
+    tlOpen=false;
+    document.getElementById('tl-panel').style.display='none';
+  }
+}
+
+document.querySelectorAll('.sc').forEach(function(c){
+  c.addEventListener('click',function(){
+    document.querySelectorAll('.sc').forEach(function(x){x.classList.remove('on');});
+    c.classList.add('on');
+  });
+});
+document.querySelectorAll('.eps').forEach(function(s){
+  s.addEventListener('click',function(){
+    document.querySelectorAll('.eps').forEach(function(x){x.classList.remove('on');});
+    s.classList.add('on');
+  });
+});
+document.querySelectorAll('.ct').forEach(function(b){
+  b.addEventListener('click',function(){
+    b.closest('.canvas-tools').querySelectorAll('.ct').forEach(function(x){x.classList.remove('on');});
+    b.classList.add('on');
+  });
+});
+document.querySelectorAll('.mood').forEach(function(m){
+  m.addEventListener('click',function(){
+    m.closest('.mood-grid').querySelectorAll('.mood').forEach(function(x){x.classList.remove('on');});
+    m.classList.add('on');
+  });
+});
+document.querySelectorAll('.vc').forEach(function(c){
+  c.addEventListener('click',function(){
+    var ta=c.closest('.ai-bar').querySelector('textarea');
+    if(ta) ta.value=c.textContent+' vibe';
+  });
+});
+</script>
+</body>
+</html>

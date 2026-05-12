@@ -1,0 +1,508 @@
+/* Pop Studio - Minimal Base */
+.shell {
+    padding: 0;
+    background: #0C0C0C;
+    min-height: 100%;
+}
+
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: #0C0C0C;
+    border-bottom: 0.5px solid rgba(255,255,255,0.07);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.logo-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.logo-circle {
+    width: 32px;
+    height: 32px;
+    background: #FF4F2E;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-text {
+    font-size: 18px;
+    font-weight: 800;
+    color: white;
+}
+
+.logo-sub {
+    font-size: 10px;
+    font-weight: 800;
+    color: #FF4F2E;
+    margin-left: 2px;
+}
+
+.nav-tabs {
+    display: flex;
+    gap: 4px;
+    background: #1E1E1E;
+    border-radius: 10px;
+    padding: 3px;
+}
+
+.ntab {
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 800;
+    color: rgba(255,255,255,0.4);
+    cursor: pointer;
+}
+
+.ntab.on {
+    background: #313131;
+    color: white;
+}
+
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.avatar {
+    width: 32px;
+    height: 32px;
+    background: #FF4F2E;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+}
+
+.upgrade-btn {
+    padding: 6px 12px;
+    background: #FF4F2E;
+    border: none;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 800;
+    color: white;
+    cursor: pointer;
+}
+
+.home-hero {
+    padding: 24px 20px;
+}
+
+.hero-eyebrow {
+    font-size: 11px;
+    font-weight: 800;
+    color: #FF4F2E;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.hero-h1 {
+    font-size: 28px;
+    font-weight: 900;
+    color: white;
+    line-height: 1.2;
+}
+
+.hero-h1 span {
+    color: #FF4F2E;
+}
+
+.hero-sub {
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
+    margin-top: 10px;
+    line-height: 1.5;
+}
+
+.section-title {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+    padding: 0 20px;
+    margin-bottom: 12px;
+}
+
+.mode-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 0 20px 20px;
+}
+
+.mode-card {
+    background: #161616;
+    border-radius: 16px;
+    padding: 16px;
+    cursor: pointer;
+    border: 0.5px solid rgba(255,255,255,0.07);
+}
+
+.mode-card.featured {
+    border-color: #FF4F2E;
+    background: #1E1E1E;
+}
+
+.mode-badge {
+    background: #FF4F2E;
+    color: white;
+    font-size: 9px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 12px;
+}
+
+.mode-icon {
+    margin-bottom: 12px;
+}
+
+.mode-icon svg {
+    width: 28px;
+    height: 28px;
+}
+
+.mode-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 4px;
+}
+
+.mode-desc {
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    line-height: 1.4;
+}
+
+.mode-arrow {
+    margin-top: 12px;
+    color: #FF4F2E;
+    font-size: 12px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.recent-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 0 20px 20px;
+}
+
+.recent-card {
+    background: #161616;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.recent-thumb {
+    height: 100px;
+    background-size: cover;
+    position: relative;
+}
+
+.recent-thumb-tag {
+    position: absolute;
+    bottom: 6px;
+    left: 6px;
+    background: rgba(0,0,0,0.7);
+    font-size: 9px;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: white;
+}
+
+.recent-meta {
+    padding: 10px;
+}
+
+.recent-name {
+    font-size: 13px;
+    font-weight: 800;
+    color: white;
+}
+
+.recent-info {
+    font-size: 10px;
+    color: rgba(255,255,255,0.4);
+    margin-top: 2px;
+}
+
+/* Editor Layout */
+.editor-layout {
+    display: flex;
+    height: calc(100vh - 100px);
+}
+
+.editor-sidebar {
+    width: 70px;
+    background: #161616;
+    border-right: 0.5px solid rgba(255,255,255,0.07);
+    padding: 12px 0;
+}
+
+.sb-btn {
+    width: 50px;
+    margin: 0 auto 8px;
+    padding: 8px 0;
+    text-align: center;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.sb-btn span {
+    font-size: 9px;
+    font-weight: 800;
+    display: block;
+    margin-top: 4px;
+    color: rgba(255,255,255,0.4);
+}
+
+.sb-btn.on {
+    background: rgba(255,79,46,0.12);
+}
+
+.sb-btn.on span {
+    color: #FF4F2E;
+}
+
+.editor-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.editor-topbar {
+    padding: 12px 16px;
+    border-bottom: 0.5px solid rgba(255,255,255,0.07);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.editor-title-input {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 6px 0;
+}
+
+.ea-btn {
+    padding: 6px 14px;
+    background: #2A2A2A;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.ea-btn.primary {
+    background: #FF4F2E;
+}
+
+.canvas-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0C0C0C;
+    position: relative;
+}
+
+.canvas-frame {
+    width: 240px;
+    height: 420px;
+    background: #1E1E1E;
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.cf-video-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #1a0533, #4a1060);
+}
+
+.cf-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.8));
+}
+
+.cf-caption {
+    position: absolute;
+    bottom: 40px;
+    left: 16px;
+    right: 16px;
+    font-size: 12px;
+    font-weight: 700;
+    color: white;
+    text-align: center;
+}
+
+.cf-play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    background: rgba(255,79,46,0.8);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.timeline-panel {
+    height: 120px;
+    background: #161616;
+    border-top: 0.5px solid rgba(255,255,255,0.07);
+}
+
+.tl-header {
+    padding: 8px 12px;
+    border-bottom: 0.5px solid rgba(255,255,255,0.07);
+}
+
+.tl-title {
+    font-size: 10px;
+    font-weight: 800;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+}
+
+.tl-tracks {
+    padding: 8px 12px;
+}
+
+.tl-track {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.tl-label {
+    width: 45px;
+    font-size: 9px;
+    font-weight: 800;
+    color: rgba(255,255,255,0.4);
+}
+
+.tl-row {
+    flex: 1;
+    height: 20px;
+    background: #2A2A2A;
+    border-radius: 4px;
+    position: relative;
+}
+
+.tl-clip {
+    position: absolute;
+    top: 2px;
+    bottom: 2px;
+    border-radius: 3px;
+    background: #1E5C3A;
+    display: flex;
+    align-items: center;
+    padding-left: 6px;
+}
+
+.tl-clip span {
+    font-size: 8px;
+    font-weight: 800;
+    color: white;
+}
+
+.tl-playhead {
+    position: absolute;
+    left: 30%;
+    width: 2px;
+    height: 100%;
+    background: #FF4F2E;
+}
+
+.editor-panel {
+    width: 200px;
+    background: #161616;
+    border-left: 0.5px solid rgba(255,255,255,0.07);
+}
+
+.panel-tabs {
+    display: flex;
+    border-bottom: 0.5px solid rgba(255,255,255,0.07);
+}
+
+.ptab {
+    flex: 1;
+    padding: 10px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 800;
+    color: rgba(255,255,255,0.4);
+    cursor: pointer;
+}
+
+.ptab.on {
+    color: #FF4F2E;
+    border-bottom: 2px solid #FF4F2E;
+}
+
+.panel-body {
+    padding: 12px;
+}
+
+.prop-group {
+    margin-bottom: 16px;
+}
+
+.prop-label {
+    font-size: 10px;
+    font-weight: 800;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.color-row {
+    display: flex;
+    gap: 8px;
+}
+
+.color-swatch {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.color-swatch.on {
+    border-color: white;
+}

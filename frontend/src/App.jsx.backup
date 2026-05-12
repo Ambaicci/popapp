@@ -1,0 +1,449 @@
+﻿import { useState, useEffect } from 'react';
+import { useVideos } from './hooks/useVideos';
+import { useComments } from './hooks/useComments';
+import HomeScreen from './screens/HomeScreen';
+import ExploreScreen from './screens/ExploreScreen';
+import ProfileScreen from './screens/ProfileScreen';
+import NotificationsScreen from './screens/NotificationsScreen';
+import SearchResultsScreen from './screens/SearchResultsScreen';
+import SettingsModal from './components/SettingsModal';
+import UploadModal from './components/UploadModal';
+import PopCamera from './components/PopCamera';
+import ShareModal from './components/ShareModal';
+import AuthPrompt from './components/AuthPrompt';
+import { useAuth } from './context/AuthContext';
+import './App.css';
+
+function App() {
+  const [currentScreen, setCurrentScreen] = useState('home');
+  const [feedType, setFeedType] = useState('for-you');
+  const [showUpload, setShowUpload] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showPopCamera, setShowPopCamera] = useState(false);
+  const [showShare, setShowShare] = useState(false);
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+  const [shareVideo, setShareVideo] = useState(null);
+  const [selectedVideoId, setSelectedVideoId] = useState(null);
+  const [commentText, setCommentText] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const [searchResults, setSearchResults] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const { user, login, signup, logout } = useAuth();
+    
+  // Guest mode tracking
+  const [isGuest, setIsGuest] = useState(true);
+  const [interactionCount, setInteractionCount] = useState(0);
+
+  const { videos, loading, loadVideos, loadFollowingVideos, handleLike, uploadVideo, toggleFollow } = useVideos();
+  const { comments, loadComments, postComment } = useComments();
+
+  const formatLikes = (count) => {
+    if (!count) return '0';
+    if (count >= 1000000) return (count / 1000000).toFixed(1) + 'M';
+    if (count >= 1000) return (count / 1000).toFixed(1) + 'K';
+    return count.toString();
+  };
+
+  const trackInteraction = () => {
+    if (isGuest) {
+      const newCount = interactionCount + 1;
+      setInteractionCount(newCount);
+      if (newCount >= 5 && !showAuthPrompt) {
+        setShowAuthPrompt(true);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (feedType === 'for-you') {
+      loadVideos();
+    } else {
+      loadFollowingVideos();
+    }
+  }, [feedType, loadVideos, loadFollowingVideos]);
+
+  const openComments = async (videoId) => {
+    setSelectedVideoId(videoId);
+    await loadComments(videoId);
+    setShowComments(true);
+  };
+
+  const openCreatorProfile = (creatorId, creatorName) => {
+    setCurrentScreen('profile');
+  };
+
+  const handlePostComment = async () => {
+    const success = await postComment(selectedVideoId, commentText);
+    if (success) {
+      setCommentText('');
+      await loadComments(selectedVideoId);
+      trackInteraction();
+    }
+  };
+
+  const handleShare = (video) => {
+    setShareVideo(video);
+    setShowShare(true);
+    trackInteraction();
+  };
+
+  const handleFollow = async (creatorId) => {
+    const result = await toggleFollow(creatorId);
+    if (result.following !== undefined) {
+      if (feedType === 'for-you') {
+        loadVideos();
+      } else {
+        loadFollowingVideos();
+      }
+      trackInteraction();
+    }
+  };
+
+  const handleLikeWithTracking = async (videoId) => {
+    await handleLike(videoId);
+    trackInteraction();
+  };
+
+  const uploadAndRefresh = async (file, title) => {
+    setUploading(true);
+    const result = await uploadVideo(file, title);
+    if (result.success) {
+      alert('Upload successful!');
+      setShowUpload(false);
+      if (feedType === 'for-you') {
+        loadVideos();
+      } else {
+        loadFollowingVideos();
+      }
+      trackInteraction();
+    } else {
+      alert('Upload failed: ' + result.error);
+    }
+    setUploading(false);
+  };
+
+  const handleSearch = () => {
+    if (searchInput.trim()) {
+      setSearchResults(searchInput);
+      setShowSearch(false);
+    }
+  };
+
+  return (
+    <div className="wrap">
+      <div className="phone">
+        <div className="notch"></div>
+
+        {/* Status Bar */}
+        <div className="sb">
+          <span>9:41</span>
+          <div className="sb-ic">
+            <svg width="15" height="10" viewBox="0 0 16 11" fill="white">
+              <rect x="0" y="3" width="3" height="8" rx="1" opacity="0.4"/>
+              <rect x="4" y="2" width="3" height="9" rx="1" opacity="0.6"/>
+              <rect x="8" y="0" width="3" height="11" rx="1" opacity="0.8"/>
+              <rect x="12" y="0" width="3" height="11" rx="1"/>
+            </svg>
+            <div className="batt"></div>
+          </div>
+        </div>
+
+        {/* Header */}
+        <div className="fh">
+          <div className="fh-br">
+            <div className="fh-dot">
+              <svg viewBox="0 0 30 30">
+                <circle cx="15" cy="13" r="8" fill="#FFF6EF"/>
+                <circle cx="11" cy="10" r="2.5" fill="#1a0a00"/>
+                <circle cx="19" cy="10" r="2.5" fill="#1a0a00"/>
+              </svg>
+            </div>
+            <span className="fh-nm">popapp</span>
+          </div>
+          <div className="fh-r">
+            <div className="fhb" onClick={() => setShowSearch(!showSearch)}>
+              <svg viewBox="0 0 24 24" stroke="white" strokeWidth="2" fill="none">
+                <circle cx="11" cy="11" r="7"/>
+                <line x1="16.5" y1="16.5" x2="22" y2="22"/>
+              </svg>
+            </div>
+            <div className="fhb" onClick={() => setShowMenu(true)}>
+              <svg viewBox="0 0 24 24" stroke="white" strokeWidth="2" fill="none">
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <line x1="3" y1="12" x2="21" y2="12"/>
+                <line x1="3" y1="18" x2="21" y2="18"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Search Bar */}
+        {showSearch && (
+          <div style={{ padding: '8px 14px', background: '#090909', borderBottom: '0.5px solid #222' }}>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input
+                type="text"
+                placeholder="Search videos, creators, pop-movies, hashtags..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSearch();
+                  }
+                }}
+                autoFocus
+                style={{ flex: 1, padding: '10px', borderRadius: '20px', background: '#222', border: 'none', color: 'white', outline: 'none' }}
+              />
+              <button onClick={handleSearch} style={{ background: '#FF4F2E', border: 'none', borderRadius: '20px', padding: '0 16px', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}>Search</button>
+            </div>
+          </div>
+        )}
+
+        {/* Tabs */}
+        {!searchResults && (
+          <div className="ftabs" style={{ display: 'flex', gap: '2px', background: 'rgba(255,255,255,0.07)', border: '0.5px solid rgba(255,255,255,0.12)', borderRadius: '20px', padding: '2.5px', width: 'fit-content', margin: '12px auto 8px auto' }}>
+            <div className={`ft ${feedType === 'for-you' ? 'on' : ''}`} onClick={() => setFeedType('for-you')}>For you</div>
+            <div className={`ft ${feedType === 'following' ? 'on' : ''}`} onClick={() => setFeedType('following')}>Following</div>
+            <div className="ft" onClick={() => alert('pop-movies - Coming soon')}>pop-movies</div>
+          </div>
+        )}
+
+        {/* Search Results */}
+        {searchResults && (
+          <SearchResultsScreen 
+            query={searchResults}
+            onClose={() => setSearchResults(null)}
+            onLike={handleLikeWithTracking}
+            onComment={openComments}
+            onShare={handleShare}
+            onCreatorClick={openCreatorProfile}
+            onFollow={handleFollow}
+            formatLikes={formatLikes}
+          />
+        )}
+
+        {/* Main Content */}
+        {!searchResults && (
+          <>
+            {currentScreen === 'home' && (
+              <HomeScreen 
+                videos={videos}
+                loading={loading}
+                onUpload={() => setShowUpload(true)}
+                onLike={handleLikeWithTracking}
+                onComment={openComments}
+                onShare={handleShare}
+                onCreatorClick={openCreatorProfile}
+                onFollow={handleFollow}
+                formatLikes={formatLikes}
+              />
+            )}
+
+            {currentScreen === 'explore' && <ExploreScreen />}
+
+            {currentScreen === 'profile' && <ProfileScreen userId={user?.id || 1} />}
+
+            {currentScreen === 'inbox' && <NotificationsScreen userId={1} />}
+          </>
+        )}
+
+        {/* Bottom Navigation */}
+        <nav className="bnav">
+          <div className={`bn ${currentScreen === 'home' ? 'on' : ''}`} onClick={() => setCurrentScreen('home')}>
+            <div className="bn-ic"><svg viewBox="0 0 24 24"><path d="M3 12L12 3l9 9v9a1 1 0 01-1 1h-5v-5H9v5H4a1 1 0 01-1-1v-9z"/></svg></div>
+            <span className="bn-l">Home</span>
+          </div>
+          <div className={`bn ${currentScreen === 'explore' ? 'on' : ''}`} onClick={() => setCurrentScreen('explore')}>
+            <div className="bn-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2"/><polygon points="12,6 13.5,10.5 18,12 13.5,13.5 12,18 10.5,13.5 6,12 10.5,10.5" fill="currentColor"/></svg></div>
+            <span className="bn-l">Explore</span>
+          </div>
+          <div className="bn-cre" onClick={() => setShowUpload(true)}>
+            <div className="bn-pill"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="3" fill="white"/><polygon points="10,8 16,10 10,12" fill="#FF4F2E"/></svg></div>
+            <span className="bn-cl">Upload</span>
+          </div>
+          <div className={`bn ${currentScreen === 'inbox' ? 'on' : ''}`} onClick={() => setCurrentScreen('inbox')}>
+            <div className="bn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+            <span className="bn-l">Inbox</span>
+          </div>
+          <div className={`bn ${currentScreen === 'profile' ? 'on' : ''}`} onClick={() => setCurrentScreen('profile')}>
+            <div className="bn-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+            <span className="bn-l">Profile</span>
+          </div>
+        </nav>
+
+        {/* Upload Modal */}
+        <UploadModal 
+          isOpen={showUpload}
+          onClose={() => setShowUpload(false)}
+          onUpload={async (file, title, description) => {
+            setShowUpload(false);
+            await uploadAndRefresh(file, title);
+          }}
+          onMakePop={() => setShowPopCamera(true)}
+          onGoLive={() => alert('Go Live - Coming soon!')}
+          uploading={uploading}
+        />
+
+        {/* Comments Modal */}
+        {showComments && (
+          <div className="veil op" style={{ zIndex: 500 }} onClick={() => setShowComments(false)}>
+            <div className="csh op" style={{ transform: 'translateY(0)', zIndex: 501, height: '60%' }} onClick={(e) => e.stopPropagation()}>
+              <div className="csh-h"></div>
+              <div className="csh-tl">Comments</div>
+              <div className="csh-ls" style={{ flex: 1, overflowY: 'auto', marginBottom: '12px' }}>
+                {comments.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '20px', color: '#888' }}>No comments yet</div>
+                ) : (
+                  comments.map((comment) => (
+                    <div key={comment.id} className="cm" style={{ display: 'flex', gap: '12px', padding: '12px 0', borderBottom: '0.5px solid #222' }}>
+                      <div className="cm-av" style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#FF4F2E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {comment.username?.charAt(0).toUpperCase() || 'U'}
+                      </div>
+                      <div className="cm-mt" style={{ flex: 1 }}>
+                        <div className="cm-nm" style={{ fontWeight: 'bold', fontSize: '13px', color: 'white' }}>{comment.username || 'user'}</div>
+                        <div className="cm-tx" style={{ fontSize: '13px', color: '#ccc', marginTop: '4px' }}>{comment.content}</div>
+                        <div className="cm-tm" style={{ fontSize: '10px', color: '#666', marginTop: '4px' }}>{new Date(comment.created_at).toLocaleString()}</div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+              <div className="csh-ir" style={{ display: 'flex', gap: '10px', paddingTop: '12px', borderTop: '0.5px solid #222' }}>
+                <input
+                  className="csh-if"
+                  placeholder="Add a comment..."
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handlePostComment()}
+                  style={{ flex: 1, background: '#222', border: 'none', borderRadius: '20px', padding: '10px 15px', color: 'white', outline: 'none' }}
+                />
+                <button onClick={handlePostComment} style={{ background: '#FF4F2E', border: 'none', borderRadius: '20px', padding: '10px 20px', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}>Post</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Share Modal */}
+        <ShareModal 
+          isOpen={showShare}
+          onClose={() => setShowShare(false)}
+          videoUrl={shareVideo?.video_url || ''}
+          videoTitle={shareVideo?.title || ''}
+          videoCreator={shareVideo?.username || ''}
+        />
+
+                {/* Floating Menu Dropdown */}
+        {showMenu && (
+          <div className="veil op" style={{ zIndex: 500 }} onClick={() => setShowMenu(false)}>
+            <div 
+              className="menu-dropdown" 
+              style={{ 
+                position: 'absolute', 
+                top: '65px', 
+                right: '14px', 
+                width: '196px', 
+                background: 'rgba(18, 18, 18, 0.96)',
+                backdropFilter: 'blur(24px)',
+                borderRadius: '18px',
+                border: '0.5px solid rgba(255, 79, 46, 0.25)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                zIndex: 501,
+                padding: '10px 6px'
+              }} 
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                
+                {/* Profile / Sign In - Top */}
+                {!user && (
+                  <div onClick={() => { setShowMenu(false); setShowAuthPrompt(true); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', borderRadius: '12px', cursor: 'pointer', marginBottom: '4px', background: 'rgba(255,79,46,0.1)' }}>
+                    <div style={{ width: '24px', height: '24px', borderRadius: '8px', background: '#FF4F2E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                      </svg>
+                    </div>
+                    <span style={{ flex: 1, color: 'white', fontSize: '13px' }}>Sign In</span>
+                    <span style={{ color: '#FF4F2E', fontSize: '12px' }}>→</span>
+                  </div>
+                )}
+                {user && (
+                  <div onClick={() => { setCurrentScreen('profile'); setShowMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', borderRadius: '12px', cursor: 'pointer', marginBottom: '4px', background: 'rgba(255,79,46,0.05)' }}>
+                    <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#FF4F2E', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 'bold', color: 'white' }}>
+                      {user.username?.charAt(0).toUpperCase()}
+                    </div>
+                    <span style={{ flex: 1, color: 'white', fontSize: '12px' }}>{user.username}</span>
+                    <span style={{ color: '#FF4F2E', fontSize: '12px' }}>→</span>
+                  </div>
+                )}
+                
+                {/* For You */}
+                <div onClick={() => { setFeedType('for-you'); setShowMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', borderRadius: '12px', cursor: 'pointer', background: feedType === 'for-you' ? 'rgba(255, 79, 46, 0.12)' : 'transparent' }}>
+                  <div style={{ width: '24px', height: '24px', borderRadius: '8px', background: 'rgba(255, 79, 46, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF4F2E" strokeWidth="2"><path d="M3 12L12 3l9 9v9a1 1 0 01-1 1h-5v-5H9v5H4a1 1 0 01-1-1v-9z"/></svg>
+                  </div>
+                  <span style={{ flex: 1, color: 'white', fontSize: '13px' }}>For You</span>
+                  {feedType === 'for-you' && <span style={{ color: '#FF4F2E' }}>✓</span>}
+                </div>
+                
+                {/* Following */}
+                <div onClick={() => { setFeedType('following'); setShowMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', borderRadius: '12px', cursor: 'pointer', background: feedType === 'following' ? 'rgba(255, 79, 46, 0.12)' : 'transparent' }}>
+                  <div style={{ width: '24px', height: '24px', borderRadius: '8px', background: 'rgba(29, 158, 117, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" strokeWidth="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  </div>
+                  <span style={{ flex: 1, color: 'white', fontSize: '13px' }}>Following</span>
+                  {feedType === 'following' && <span style={{ color: '#1D9E75' }}>✓</span>}
+                </div>
+                
+                <div style={{ height: '0.5px', background: 'rgba(255, 255, 255, 0.06)', margin: '6px 8px' }} />
+                
+                {/* pop-movies */}
+                <div onClick={() => { alert('pop-movies · Coming soon'); setShowMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', borderRadius: '12px', cursor: 'pointer' }}>
+                  <div style={{ width: '24px', height: '24px', borderRadius: '8px', background: 'rgba(128, 90, 213, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="3"/><polygon points="10,8 16,10 10,12" fill="#A78BFA"/></svg>
+                  </div>
+                  <span style={{ flex: 1, color: 'white', fontSize: '13px' }}>pop-movies</span>
+                  <span style={{ color: 'rgba(255,255,255,0.28)', fontSize: '9px' }}>soon</span>
+                </div>
+                
+                {/* pop-STUDIO */}
+                <div onClick={() => { alert('pop-STUDIO · Coming soon'); setShowMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', borderRadius: '12px', cursor: 'pointer' }}>
+                  <div style={{ width: '24px', height: '24px', borderRadius: '8px', background: 'rgba(255, 79, 46, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF4F2E" strokeWidth="2"><path d="M4 4l16 8-16 8V4z"/></svg>
+                  </div>
+                  <span style={{ flex: 1, color: 'white', fontSize: '13px' }}>pop-STUDIO</span>
+                  <span style={{ color: 'rgba(255,255,255,0.28)', fontSize: '9px' }}>soon</span>
+                </div>
+                
+                <div style={{ height: '0.5px', background: 'rgba(255, 255, 255, 0.06)', margin: '6px 8px' }} />
+                
+                {/* Settings */}
+                <div onClick={() => { setShowMenu(false); setShowSettings(true); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', borderRadius: '12px', cursor: 'pointer' }}>
+                  <div style={{ width: '24px', height: '24px', borderRadius: '8px', background: 'rgba(156, 163, 175, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l-.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  </div>
+                  <span style={{ flex: 1, color: 'white', fontSize: '13px' }}>Settings</span>
+                </div>
+                
+                {/* Logout - Bottom (only when logged in) */}
+                {user && (
+                  <div onClick={() => { setShowMenu(false); logout(); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', borderRadius: '12px', cursor: 'pointer', marginTop: '8px', borderTop: '0.5px solid rgba(255,255,255,0.06)' }}>
+                    <div style={{ width: '24px', height: '24px', borderRadius: '8px', background: 'rgba(255,79,46,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF4F2E" strokeWidth="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                      </svg>
+                    </div>
+                    <span style={{ flex: 1, color: '#FF4F2E', fontSize: '13px' }}>Logout</span>
+                  </div>
+                        )}
+      </div>
+    </div>
+  );
+}
+
+export default App;
