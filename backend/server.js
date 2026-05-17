@@ -111,10 +111,13 @@ app.get("/", (req, res) => {
   res.json({ message: "PopApp API is running!" });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`http://localhost:${PORT}`);
-});
+// Start server (only for local development)
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log(`http://localhost:${PORT}`);
+  });
+}
 
-module.exports = { db };
+// For Vercel serverless deployment
+module.exports = app;

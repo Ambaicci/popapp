@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api/videos';
+const API_URL = '/api/videos';
 
 export function useVideos() {
   const [videos, setVideos] = useState([]);
