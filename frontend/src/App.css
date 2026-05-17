@@ -14,39 +14,37 @@ body {
   min-height: 100vh;
 }
 
-/* PC development view - phone dimensions */
 .wrap {
-  width: 100%;
-  max-width: 375px;
-  margin: 0 auto;
-  background: #000;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-}
-
-/* On mobile, remove max-width and fill screen */
-@media (max-width: 376px) {
-  .wrap {
-    max-width: 100%;
-    margin: 0;
-    box-shadow: none;
-  }
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
 }
 
 .phone {
-  width: 100%;
-  height: 100vh;
-  min-height: 700px;
+  width: 375px;
+  height: 700px;
   background: #000;
-  position: relative;
+  border-radius: 44px;
   overflow: hidden;
+  position: relative;
+  border: 2px solid #2a2a2a;
+  box-shadow: 0 0 0 6px #0e0e0e, 0 30px 60px rgba(0, 0, 0, 0.5);
 }
 
-/* Rest of your CSS remains the same */
 .notch {
-  display: none;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 110px;
+  height: 28px;
+  background: #000;
+  border-radius: 0 0 18px 18px;
+  z-index: 200;
 }
 
-/* Status Bar */
+/* Status Bar - overlay on video */
 .sb {
   position: absolute;
   top: 0;
@@ -54,11 +52,11 @@ body {
   right: 0;
   z-index: 25;
   background: transparent;
-  padding: 12px 16px;
-  padding-top: calc(env(safe-area-inset-top, 12px) + 12px);
+  padding: 14px 20px;
+  padding-top: 50px;
   display: flex;
   justify-content: space-between;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   color: white;
 }
@@ -99,7 +97,7 @@ body {
   border-radius: 0 1px 1px 0;
 }
 
-/* Header */
+/* Header - overlay on video */
 .fh {
   position: absolute;
   top: 0;
@@ -108,7 +106,7 @@ body {
   z-index: 20;
   background: transparent;
   padding: 12px 16px;
-  padding-top: calc(env(safe-area-inset-top, 12px) + 12px);
+  padding-top: 50px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -164,10 +162,10 @@ body {
   height: 18px;
 }
 
-/* Tabs */
+/* Tabs - overlay on video */
 .ftabs {
   position: absolute;
-  top: calc(env(safe-area-inset-top, 12px) + 60px);
+  top: 100px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 20;
@@ -182,7 +180,7 @@ body {
 .ft {
   padding: 6px 14px;
   border-radius: 20px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
@@ -195,7 +193,7 @@ body {
   color: white;
 }
 
-/* Feed Container */
+/* Feed Container - full screen */
 .fs {
   position: absolute;
   top: 0;
@@ -210,10 +208,9 @@ body {
   display: none;
 }
 
-/* Feed Item */
+/* Feed Item - full height */
 .fi {
-  height: 100vh;
-  min-height: 700px;
+  height: 700px;
   position: relative;
   scroll-snap-align: start;
   background: #000;
@@ -232,7 +229,7 @@ body {
 
 .fi-inf {
   position: absolute;
-  bottom: 100px;
+  bottom: 80px;
   left: 16px;
   right: 80px;
   z-index: 10;
@@ -277,7 +274,7 @@ body {
 .rl {
   position: absolute;
   right: 12px;
-  bottom: 120px;
+  bottom: 100px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -320,15 +317,14 @@ body {
   color: white;
 }
 
-/* Bottom Navigation */
+/* Bottom Navigation - overlay on video */
 .bnav {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
   height: 70px;
-  padding-bottom: env(safe-area-inset-bottom);
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(20px);
   display: flex;
   align-items: center;
@@ -475,7 +471,7 @@ body {
 /* Menu Dropdown */
 .menu-dropdown {
   position: fixed;
-  top: calc(env(safe-area-inset-top, 12px) + 55px);
+  top: 60px;
   right: 16px;
   width: 180px;
   background: #1a1a1a;
@@ -513,7 +509,7 @@ body {
   background: #FF4F2E;
   display: flex;
   align-items: center;
-  justifyContent: center;
+  justify-content: center;
   font-weight: bold;
   flex-shrink: 0;
 }
