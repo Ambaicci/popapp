@@ -1,19 +1,32 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 function VideoCard({ video, onLike, onComment, onShare, onCreatorClick, onFollow, formatLikes }) {
   const [expanded, setExpanded] = useState(false);
+  const videoRef = useRef(null);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
     let timeout;
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
+          // Video becomes visible - play it
+          if (videoRef.current) {
+            videoRef.current.play().catch(e => console.log('Play error:', e));
+            setIsPlaying(true);
+          }
+          // Track view
           timeout = setTimeout(() => {
             fetch(`http://localhost:5000/api/videos/${video.id}/view`, { method: 'POST' })
               .catch(err => console.error('View tracking error:', err));
           }, 1000);
         } else {
+          // Video becomes hidden - pause it
+          if (videoRef.current) {
+            videoRef.current.pause();
+            setIsPlaying(false);
+          }
           clearTimeout(timeout);
         }
       });
@@ -28,18 +41,30 @@ function VideoCard({ video, onLike, onComment, onShare, onCreatorClick, onFollow
     };
   }, [video.id]);
 
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        videoRef.current.play();
+        setIsPlaying(true);
+      }
+    }
+  };
+
   return (
     <div className="fi" id={`video-${video.id}`}>
       <div className="fb" style={{ background: 'black' }}></div>
       <div className="fc"></div>
       {video.video_url && (
         <video
+          ref={videoRef}
           src={video.video_url}
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-          autoPlay
           loop
-          muted
           playsInline
+          onClick={togglePlay}
         />
       )}
       

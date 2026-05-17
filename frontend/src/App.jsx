@@ -11,8 +11,6 @@ import UploadModal from './components/UploadModal';
 import PopCamera from './components/PopCamera';
 import ShareModal from './components/ShareModal';
 import AuthPrompt from './components/AuthPrompt';
-import { useAuth } from './context/AuthContext';
-import { useToast } from './context/ToastContext';
 import './App.css';
 
 function App() {
@@ -35,10 +33,8 @@ function App() {
   
   const [isGuest, setIsGuest] = useState(true);
   const [interactionCount, setInteractionCount] = useState(0);
-  
-  const { showToast } = useToast();
-  const { user, login, signup, logout } = useAuth();
-  const { videos, loading, loadVideos, loadFollowingVideos, handleLike, uploadVideo, toggleFollow } = useVideos();
+
+  const { videos, loading, loadVideos, loadFollowingVideos, loadMomentsVideos, handleLike, uploadVideo, toggleFollow } = useVideos();
   const { comments, loadComments, postComment } = useComments();
 
   const formatLikes = (count) => {
@@ -49,7 +45,7 @@ function App() {
   };
 
   const trackInteraction = () => {
-    if (isGuest && !user) {
+    if (isGuest) {
       const newCount = interactionCount + 1;
       setInteractionCount(newCount);
       if (newCount >= 5 && !showAuthPrompt) {
@@ -61,10 +57,12 @@ function App() {
   useEffect(() => {
     if (feedType === 'for-you') {
       loadVideos();
-    } else {
+    } else if (feedType === 'following') {
       loadFollowingVideos();
+    } else if (feedType === 'moments') {
+      loadMomentsVideos();
     }
-  }, [feedType, loadVideos, loadFollowingVideos]);
+  }, [feedType, loadVideos, loadFollowingVideos, loadMomentsVideos]);
 
   const openComments = async (videoId) => {
     setSelectedVideoId(videoId);
@@ -96,8 +94,10 @@ function App() {
     if (result.following !== undefined) {
       if (feedType === 'for-you') {
         loadVideos();
-      } else {
+      } else if (feedType === 'following') {
         loadFollowingVideos();
+      } else if (feedType === 'moments') {
+        loadMomentsVideos();
       }
       trackInteraction();
     }
@@ -112,16 +112,18 @@ function App() {
     setUploading(true);
     const result = await uploadVideo(file, title);
     if (result.success) {
-      showToast('Upload successful!', 'success')
+      alert('Upload successful!');
       setShowUpload(false);
       if (feedType === 'for-you') {
         loadVideos();
-      } else {
+      } else if (feedType === 'following') {
         loadFollowingVideos();
+      } else if (feedType === 'moments') {
+        loadMomentsVideos();
       }
       trackInteraction();
     } else {
-     showToast('Upload failed: ' + result.error, 'error')
+      alert('Upload failed: ' + result.error);
     }
     setUploading(false);
   };
@@ -184,10 +186,14 @@ function App() {
             <div style={{ display: 'flex', gap: '8px' }}>
               <input
                 type="text"
-                placeholder="Search videos, creators, pop-movies, hashtags..."
+                placeholder="Search..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                onKeyPress={(e) => { if (e.key === 'Enter') handleSearch(); }}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSearch();
+                  }
+                }}
                 autoFocus
                 style={{ flex: 1, padding: '10px', borderRadius: '20px', background: '#222', border: 'none', color: 'white', outline: 'none' }}
               />
@@ -197,10 +203,11 @@ function App() {
         )}
 
         {!searchResults && (
-          <div className="ftabs" style={{ display: 'flex', gap: '2px', background: 'rgba(255,255,255,0.07)', border: '0.5px solid rgba(255,255,255,0.12)', borderRadius: '20px', padding: '2.5px', width: 'fit-content', margin: '12px auto 8px auto' }}>
+          <div className="ftabs">
             <div className={`ft ${feedType === 'for-you' ? 'on' : ''}`} onClick={() => setFeedType('for-you')}>For you</div>
             <div className={`ft ${feedType === 'following' ? 'on' : ''}`} onClick={() => setFeedType('following')}>Following</div>
-            <div className="ft" onClick={() => showToast('pop-movies - Coming soon', 'info')}>pop-movies</div>
+            <div className={`ft ${feedType === 'moments' ? 'on' : ''}`} onClick={() => setFeedType('moments')}>Moments</div>
+            <div className="ft" onClick={() => alert('pop-movies - Coming soon')}>pop-movies</div>
           </div>
         )}
 
@@ -232,9 +239,12 @@ function App() {
                 formatLikes={formatLikes}
               />
             )}
+
             {currentScreen === 'explore' && <ExploreScreen />}
-            {currentScreen === 'profile' && <ProfileScreen userId={user?.id || 1} />}
-            {currentScreen === 'inbox' && <NotificationsScreen userId={user?.id || 1} />}
+
+            {currentScreen === 'profile' && <ProfileScreen userId={1} />}
+
+            {currentScreen === 'inbox' && <NotificationsScreen userId={1} />}
           </>
         )}
 
@@ -269,41 +279,38 @@ function App() {
             await uploadAndRefresh(file, title);
           }}
           onMakePop={() => setShowPopCamera(true)}
-          onGoLive={() => showToast('Go Live - Coming soon!', 'info')}
+          onGoLive={() => alert('Go Live - Coming soon!')}
           uploading={uploading}
         />
 
         {showComments && (
           <div className="veil op" style={{ zIndex: 500 }} onClick={() => setShowComments(false)}>
-            <div className="csh op" style={{ transform: 'translateY(0)', zIndex: 501, height: '60%' }} onClick={(e) => e.stopPropagation()}>
+            <div className="csh op" onClick={(e) => e.stopPropagation()}>
               <div className="csh-h"></div>
               <div className="csh-tl">Comments</div>
-              <div className="csh-ls" style={{ flex: 1, overflowY: 'auto', marginBottom: '12px' }}>
+              <div className="csh-ls">
                 {comments.length === 0 ? (
                   <div style={{ textAlign: 'center', padding: '20px', color: '#888' }}>No comments yet</div>
                 ) : (
                   comments.map((comment) => (
-                    <div key={comment.id} className="cm" style={{ display: 'flex', gap: '12px', padding: '12px 0', borderBottom: '0.5px solid #222' }}>
-                      <div className="cm-av" style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#FF4F2E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        {comment.username?.charAt(0).toUpperCase() || 'U'}
-                      </div>
-                      <div className="cm-mt" style={{ flex: 1 }}>
-                        <div className="cm-nm" style={{ fontWeight: 'bold', fontSize: '13px', color: 'white' }}>{comment.username || 'user'}</div>
-                        <div className="cm-tx" style={{ fontSize: '13px', color: '#ccc', marginTop: '4px' }}>{comment.content}</div>
-                        <div className="cm-tm" style={{ fontSize: '10px', color: '#666', marginTop: '4px' }}>{new Date(comment.created_at).toLocaleString()}</div>
+                    <div key={comment.id} className="cm">
+                      <div className="cm-av">{comment.username?.charAt(0).toUpperCase() || 'U'}</div>
+                      <div className="cm-mt">
+                        <div className="cm-nm">{comment.username || 'user'}</div>
+                        <div className="cm-tx">{comment.content}</div>
+                        <div className="cm-tm">{new Date(comment.created_at).toLocaleString()}</div>
                       </div>
                     </div>
                   ))
                 )}
               </div>
-              <div className="csh-ir" style={{ display: 'flex', gap: '10px', paddingTop: '12px', borderTop: '0.5px solid #222' }}>
+              <div className="csh-ir">
                 <input
                   className="csh-if"
                   placeholder="Add a comment..."
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handlePostComment()}
-                  style={{ flex: 1, background: '#222', border: 'none', borderRadius: '20px', padding: '10px 15px', color: 'white', outline: 'none' }}
                 />
                 <button onClick={handlePostComment} style={{ background: '#FF4F2E', border: 'none', borderRadius: '20px', padding: '10px 20px', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}>Post</button>
               </div>
@@ -319,86 +326,15 @@ function App() {
           videoCreator={shareVideo?.username || ''}
         />
 
-        {/* Floating Menu Dropdown */}
         {showMenu && (
-          <div className="veil op" style={{ zIndex: 500 }} onClick={() => setShowMenu(false)}>
-            <div className="menu-dropdown" style={{ position: 'absolute', top: '65px', right: '14px', width: '196px', background: 'rgba(18, 18, 18, 0.96)', backdropFilter: 'blur(24px)', borderRadius: '18px', border: '0.5px solid rgba(255, 79, 46, 0.25)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)', zIndex: 501, padding: '10px 6px' }} onClick={(e) => e.stopPropagation()}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                
-                <div onClick={() => { setFeedType('for-you'); setShowMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', borderRadius: '12px', cursor: 'pointer', background: feedType === 'for-you' ? 'rgba(255, 79, 46, 0.12)' : 'transparent' }}>
-                  <div style={{ width: '24px', height: '24px', borderRadius: '8px', background: 'rgba(255, 79, 46, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF4F2E" strokeWidth="2"><path d="M3 12L12 3l9 9v9a1 1 0 01-1 1h-5v-5H9v5H4a1 1 0 01-1-1v-9z"/></svg>
-                  </div>
-                  <span style={{ flex: 1, color: 'white', fontSize: '13px' }}>For You</span>
-                  {feedType === 'for-you' && <span style={{ color: '#FF4F2E' }}>✓</span>}
-                </div>
-                
-                <div onClick={() => { setFeedType('following'); setShowMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', borderRadius: '12px', cursor: 'pointer', background: feedType === 'following' ? 'rgba(255, 79, 46, 0.12)' : 'transparent' }}>
-                  <div style={{ width: '24px', height: '24px', borderRadius: '8px', background: 'rgba(29, 158, 117, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" strokeWidth="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                  </div>
-                  <span style={{ flex: 1, color: 'white', fontSize: '13px' }}>Following</span>
-                  {feedType === 'following' && <span style={{ color: '#1D9E75' }}>✓</span>}
-                </div>
-                
-         <div onClick={() => { showToast('pop-movies · Coming soon', 'info'); setShowMenu(false); }} style={{ display: 'flex',       
-alignItems: 'center', gap: '10px', padding: '8px 10px', borderRadius: '12px', cursor: 'pointer' }}>
-                  <div style={{ width: '24px', height: '24px', borderRadius: '8px', background: 'rgba(128, 90, 213, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="3"/><polygon points="10,8 16,10 10,12" fill="#A78BFA"/></svg>
-                  </div>
-                  <span style={{ flex: 1, color: 'white', fontSize: '13px' }}>pop-movies</span>
-                  <span style={{ color: 'rgba(255,255,255,0.28)', fontSize: '9px' }}>soon</span>
-                </div>
-                
-<div onClick={() => { showToast('pop-STUDIO · Coming soon', 'info'); setShowMenu(false); }}style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', borderRadius: '12px', cursor: 'pointer' }}>
-                  <div style={{ width: '24px', height: '24px', borderRadius: '8px', background: 'rgba(255, 79, 46, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF4F2E" strokeWidth="2"><path d="M4 4l16 8-16 8V4z"/></svg>
-                  </div>
-                  <span style={{ flex: 1, color: 'white', fontSize: '13px' }}>pop-STUDIO</span>
-                  <span style={{ color: 'rgba(255,255,255,0.28)', fontSize: '9px' }}>soon</span>
-                </div>
-                
-                <div style={{ height: '0.5px', background: 'rgba(255, 255, 255, 0.06)', margin: '6px 8px' }} />
-                
-                {!user && (
-                  <div onClick={() => { setShowMenu(false); setShowAuthPrompt(true); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', borderRadius: '12px', cursor: 'pointer', background: 'rgba(255,79,46,0.1)' }}>
-                    <div style={{ width: '24px', height: '24px', borderRadius: '8px', background: '#FF4F2E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
-                    </div>
-                    <span style={{ flex: 1, color: 'white', fontSize: '13px' }}>Sign In</span>
-                    <span style={{ color: '#FF4F2E', fontSize: '12px' }}>→</span>
-                  </div>
-                )}
-                
-                {user && (
-                  <div onClick={() => { setCurrentScreen('profile'); setShowMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', borderRadius: '12px', cursor: 'pointer', background: 'rgba(255,79,46,0.05)' }}>
-                    <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#FF4F2E', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 'bold', color: 'white' }}>
-                      {user.username?.charAt(0).toUpperCase()}
-                    </div>
-                    <span style={{ flex: 1, color: 'white', fontSize: '12px' }}>{user.username}</span>
-                    <span style={{ color: '#FF4F2E', fontSize: '12px' }}>→</span>
-                  </div>
-                )}
-                
-                {user && (
-                  <div onClick={() => { setShowMenu(false); logout(); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', borderRadius: '12px', cursor: 'pointer', marginTop: '4px', borderTop: '0.5px solid rgba(255,255,255,0.06)' }}>
-                    <div style={{ width: '24px', height: '24px', borderRadius: '8px', background: 'rgba(255,79,46,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF4F2E" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
-                    </div>
-                    <span style={{ flex: 1, color: '#FF4F2E', fontSize: '13px' }}>Logout</span>
-                  </div>
-                )}
-                
-                <div style={{ height: '0.5px', background: 'rgba(255, 255, 255, 0.06)', margin: '6px 8px' }} />
-                
-                <div onClick={() => { setShowMenu(false); setShowSettings(true); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', borderRadius: '12px', cursor: 'pointer' }}>
-                  <div style={{ width: '24px', height: '24px', borderRadius: '8px', background: 'rgba(156, 163, 175, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l-.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-                  </div>
-                  <span style={{ flex: 1, color: 'white', fontSize: '13px' }}>Settings</span>
-                </div>
-                
-              </div>
+          <div className="veil op" onClick={() => setShowMenu(false)}>
+            <div className="menu-dropdown" onClick={(e) => e.stopPropagation()}>
+              <div className="menu-item" onClick={() => { setFeedType('for-you'); setShowMenu(false); }}>For You</div>
+              <div className="menu-item" onClick={() => { setFeedType('following'); setShowMenu(false); }}>Following</div>
+              <div className="menu-item" onClick={() => { setFeedType('moments'); setShowMenu(false); }}>Moments</div>
+              <div className="menu-item" onClick={() => { alert('pop-movies · Coming soon'); setShowMenu(false); }}>pop-movies</div>
+              <div className="menu-item" onClick={() => { alert('pop-STUDIO · Coming soon'); setShowMenu(false); }}>pop-STUDIO</div>
+              <div className="menu-item" onClick={() => { setShowMenu(false); setShowSettings(true); }}>Settings</div>
             </div>
           </div>
         )}
@@ -416,22 +352,14 @@ alignItems: 'center', gap: '10px', padding: '8px 10px', borderRadius: '12px', cu
           isOpen={showAuthPrompt}
           onClose={() => setShowAuthPrompt(false)}
           onSignup={async ({ email, username, password }) => {
-            const result = await signup(email, username, password);
-            if (result.success) {
-              setShowAuthPrompt(false);
-              setIsGuest(false);
-            } else {
-              showToast(result.error, 'error');
-            }
+            alert(`Welcome ${username}! Signup coming soon.`);
+            setShowAuthPrompt(false);
+            setIsGuest(false);
           }}
           onLogin={async ({ email, password }) => {
-            const result = await login(email, password);
-            if (result.success) {
-              setShowAuthPrompt(false);
-              setIsGuest(false);
-            } else {
-            showToast(result.error, 'error') ;
-            }
+            alert('Login coming soon!');
+            setShowAuthPrompt(false);
+            setIsGuest(false);
           }}
         />
 

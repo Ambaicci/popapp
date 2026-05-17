@@ -62,6 +62,23 @@ export function useVideos() {
     }
   }, []);
 
+  const loadMomentsVideos = useCallback(async () => {
+  try {
+    setLoading(true);
+    const res = await axios.get(`${API_URL}/feed/moments`);
+    const videosWithStatus = res.data.map(v => ({ 
+      ...v, 
+      userLiked: false,
+      isFollowing: false 
+    }));
+    setVideos(videosWithStatus);
+  } catch (err) {
+    console.error('Error loading moments:', err);
+  } finally {
+    setLoading(false);
+  }
+}, []);
+  
   const handleLike = useCallback(async (videoId) => {
     try {
       await axios.post(`http://localhost:5000/api/videos/${videoId}/like`);
@@ -101,6 +118,7 @@ export function useVideos() {
     loading,
     loadVideos,
     loadFollowingVideos,
+    loadMomentsVideos,
     handleLike,
     uploadVideo,
     toggleFollow

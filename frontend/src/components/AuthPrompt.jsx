@@ -205,18 +205,19 @@ function AuthPrompt({ isOpen, onClose, onSignup, onLogin }) {
             
             <button
               onClick={handleSignup}
-              style={{
-                width: '100%',
-                padding: '14px',
-                background: '#FF4F2E',
-                border: 'none',
-                borderRadius: '40px',
-                color: 'white',
-                fontWeight: '600',
-                fontSize: '15px',
-                cursor: 'pointer',
-                marginBottom: '12px'
-              }}
+             style={{ 
+  position: 'absolute', 
+  bottom: 0,
+  left: '50%',
+  transform: 'translateX(-50%)',
+  maxWidth: '375px',
+  width: '100%',
+  background: '#0a0a0a',
+  borderTopLeftRadius: '28px',
+  borderTopRightRadius: '28px',
+  padding: '24px 20px 32px',
+  animation: 'slideUp 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1)'
+}} 
             >
               Create account
             </button>
